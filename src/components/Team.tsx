@@ -28,7 +28,8 @@ interface TeamMember {
 const Team = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const cardBg = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const roleColor = useColorModeValue('purple.500', 'purple.300');
+  const borderColor = useColorModeValue('gray.100', 'gray.700');
 
   useEffect(() => {
     const fetchTeamMembers = async () => {
@@ -48,22 +49,22 @@ const Team = () => {
   }, []);
 
   return (
-    <Box as="section" py={{ base: 12, md: 16 }}>
+    <Box as="section" py={{ base: 12, md: 16 }} bg={useColorModeValue('gray.50', 'gray.900')}>
       <Container maxW="7xl">
-        <VStack spacing={8} align="stretch">
+        <VStack spacing={12} align="stretch">
           <Box textAlign="center">
             <Heading
               as="h2"
               size="2xl"
               fontWeight="bold"
               mb={4}
-              bgGradient="linear(to-r, blue.400, purple.500)"
+              bgGradient="linear(to-r, google.blue, google.red)"
               bgClip="text"
             >
               Our Team
             </Heading>
-            <Text fontSize="lg" color={useColorModeValue('gray.600', 'gray.400')}>
-              Meet the passionate individuals behind GDG Guwahati
+            <Text fontSize="xl" color={useColorModeValue('gray.600', 'gray.400')}>
+              Meet the passionate individuals behind GDG Gurugram University
             </Text>
           </Box>
 
@@ -72,37 +73,58 @@ const Team = () => {
               <Box
                 key={member._id}
                 bg={cardBg}
-                borderRadius="lg"
-                borderWidth="1px"
-                borderColor={borderColor}
+                borderRadius="2xl"
                 overflow="hidden"
+                boxShadow="xl"
                 transition="all 0.3s"
-                _hover={{ transform: 'translateY(-5px)', shadow: 'lg' }}
+                _hover={{ transform: 'translateY(-8px)', shadow: '2xl' }}
+                position="relative"
               >
-                <Box position="relative" paddingTop="100%">
-                  <Image
-                    src={member.image}
-                    alt={member.name}
+                {/* Circular Image Container */}
+                <Box
+                  position="relative"
+                  width="140px"
+                  height="140px"
+                  mx="auto"
+                  mt={8}
+                  mb={4}
+                >
+                  <Box
                     position="absolute"
                     top="0"
                     left="0"
+                    right="0"
+                    bottom="0"
+                    borderRadius="full"
+                    bg={member.role === 'GDG Head' ? 'purple.500' : member.role === 'Tech Lead' ? 'red.500' : 'blue.500'}
+                    opacity="0.1"
+                  />
+                  <Image
+                    src={member.image}
+                    alt={member.name}
+                    borderRadius="full"
+                    objectFit="cover"
                     width="100%"
                     height="100%"
-                    objectFit="cover"
+                    border="4px solid"
+                    borderColor={member.role === 'GDG Head' ? 'purple.500' : member.role === 'Tech Lead' ? 'red.500' : 'blue.500'}
                   />
                 </Box>
-                <VStack p={4} spacing={2} align="center">
-                  <Heading size="md" textAlign="center">
+
+                <VStack p={6} spacing={3} align="center">
+                  <Heading size="md" textAlign="center" fontWeight="bold">
                     {member.name}
                   </Heading>
                   <Text
-                    color={useColorModeValue('gray.600', 'gray.400')}
+                    color={member.role === 'GDG Head' ? 'purple.500' : member.role === 'Tech Lead' ? 'red.500' : 'blue.500'}
                     fontSize="sm"
-                    fontWeight="medium"
+                    fontWeight="semibold"
+                    textTransform="uppercase"
+                    letterSpacing="wide"
                   >
                     {member.role}
                   </Text>
-                  <HStack spacing={3} pt={2}>
+                  <HStack spacing={4} pt={2}>
                     {member.linkedin && (
                       <Link href={member.linkedin} isExternal>
                         <IconButton
@@ -111,6 +133,7 @@ const Team = () => {
                           colorScheme="linkedin"
                           variant="ghost"
                           size="sm"
+                          rounded="full"
                         />
                       </Link>
                     )}
@@ -122,6 +145,7 @@ const Team = () => {
                           colorScheme="twitter"
                           variant="ghost"
                           size="sm"
+                          rounded="full"
                         />
                       </Link>
                     )}
@@ -133,6 +157,7 @@ const Team = () => {
                           colorScheme="gray"
                           variant="ghost"
                           size="sm"
+                          rounded="full"
                         />
                       </Link>
                     )}

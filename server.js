@@ -1,6 +1,11 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -8,7 +13,7 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:5173',  // Vite dev server
   'http://localhost:5000',  // Local backend
-  'https://gdg-gug.vercel.app',  // Production URL (update this with your Vercel domain)
+  'https://gdg-gug.vercel.app',  // Production URL
   process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null // Vercel preview deployments
 ].filter(Boolean);
 
@@ -25,6 +30,9 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// Serve static files from the dist directory
+app.use(express.static(path.join(__dirname, 'dist')));
 
 // Use environment variable for MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://rghv064:kronos@cluster0.n2fva.mongodb.net/yourdbname?retryWrites=true&w=majority';
@@ -65,64 +73,99 @@ const Event = mongoose.model('Event', eventSchema);
 const News = mongoose.model('News', newsSchema);
 const TeamMember = mongoose.model('TeamMember', teamMemberSchema);
 
-// Define routes
-
-// Events
-app.get('/events', async (req, res) => {
-  const events = await Event.find();
-  res.json(events);
+// API Routes
+app.get('/api/events', async (req, res) => {
+  try {
+    const events = await Event.find();
+    res.json(events);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch events' });
+  }
 });
 
-app.post('/events', async (req, res) => {
-  const newEvent = new Event(req.body);
-  await newEvent.save();
-  res.json(newEvent);
+app.post('/api/events', async (req, res) => {
+  try {
+    const newEvent = new Event(req.body);
+    await newEvent.save();
+    res.json(newEvent);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create event' });
+  }
 });
 
-app.delete('/events/:id', async (req, res) => {
-  await Event.findByIdAndDelete(req.params.id);
-  res.json({ message: 'Event deleted successfully' });
+app.delete('/api/events/:id', async (req, res) => {
+  try {
+    await Event.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Event deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete event' });
+  }
 });
 
-// News
-app.get('/news', async (req, res) => {
-  const news = await News.find();
-  res.json(news);
+app.get('/api/news', async (req, res) => {
+  try {
+    const news = await News.find();
+    res.json(news);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch news' });
+  }
 });
 
-app.post('/news', async (req, res) => {
-  const newNews = new News(req.body);
-  await newNews.save();
-  res.json(newNews);
+app.post('/api/news', async (req, res) => {
+  try {
+    const newNews = new News(req.body);
+    await newNews.save();
+    res.json(newNews);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create news' });
+  }
 });
 
-app.delete('/news/:id', async (req, res) => {
-  await News.findByIdAndDelete(req.params.id);
-  res.json({ message: 'News item deleted successfully' });
+app.delete('/api/news/:id', async (req, res) => {
+  try {
+    await News.findByIdAndDelete(req.params.id);
+    res.json({ message: 'News deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete news' });
+  }
 });
 
-// Team Members
-app.get('/team-members', async (req, res) => {
-  const teamMembers = await TeamMember.find();
-  res.json(teamMembers);
+app.get('/api/team-members', async (req, res) => {
+  try {
+    const teamMembers = await TeamMember.find();
+    res.json(teamMembers);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch team members' });
+  }
 });
 
-app.post('/team-members', async (req, res) => {
-  const newTeamMember = new TeamMember(req.body);
-  await newTeamMember.save();
-  res.json(newTeamMember);
+app.post('/api/team-members', async (req, res) => {
+  try {
+    const newTeamMember = new TeamMember(req.body);
+    await newTeamMember.save();
+    res.json(newTeamMember);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create team member' });
+  }
 });
 
-app.delete('/team-members/:id', async (req, res) => {
-  await TeamMember.findByIdAndDelete(req.params.id);
-  res.json({ message: 'Team member deleted successfully' });
+app.delete('/api/team-members/:id', async (req, res) => {
+  try {
+    await TeamMember.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Team member deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete team member' });
+  }
 });
 
-// Start the server
+// Handle React routing, return all requests to React app
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
-// For Vercel, we need to export the Express app
 export default app;
