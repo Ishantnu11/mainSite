@@ -1,4 +1,4 @@
-import { Box, Container, Heading, Text, SimpleGrid, Button, VStack, Badge, Image } from '@chakra-ui/react'
+import { Box, Container, Heading, Text, SimpleGrid, Button, VStack, Badge, Image, Alert, AlertIcon, AlertTitle, AlertDescription } from '@chakra-ui/react'
 import { useState, useEffect } from 'react'
 import { API_ENDPOINTS } from '../config/api'
 
@@ -28,6 +28,7 @@ const Events = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<any>(null);
 
   useEffect(() => {
     fetchEvents();
@@ -35,15 +36,25 @@ const Events = () => {
 
   const fetchEvents = async () => {
     try {
+      console.log('Fetching from:', API_ENDPOINTS.events);
       const response = await fetch(API_ENDPOINTS.events);
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch events');
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
       }
+      
       const data = await response.json();
+      console.log('Received data:', data);
       setEvents(data);
+      setError(null);
+      setErrorDetails(null);
     } catch (error) {
       console.error('Error fetching events:', error);
       setError('Failed to load events');
+      setErrorDetails(error);
     } finally {
       setIsLoading(false);
     }
@@ -52,7 +63,10 @@ const Events = () => {
   if (isLoading) {
     return (
       <Container maxW="100%" py={12}>
-        <Text>Loading events...</Text>
+        <Alert status="info">
+          <AlertIcon />
+          <AlertTitle>Loading events...</AlertTitle>
+        </Alert>
       </Container>
     );
   }
@@ -60,7 +74,19 @@ const Events = () => {
   if (error) {
     return (
       <Container maxW="100%" py={12}>
-        <Text color="red.500">{error}</Text>
+        <Alert status="error">
+          <AlertIcon />
+          <VStack align="start" spacing={2}>
+            <AlertTitle>{error}</AlertTitle>
+            <AlertDescription>
+              {errorDetails && (
+                <Text fontSize="sm" as="pre" whiteSpace="pre-wrap">
+                  {errorDetails.toString()}
+                </Text>
+              )}
+            </AlertDescription>
+          </VStack>
+        </Alert>
       </Container>
     );
   }
@@ -75,11 +101,19 @@ const Events = () => {
               Join us for exciting tech events and grow with the community
             </Text>
           </Box>
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={8}>
-            {events.map((event) => (
-              <EventCard key={event._id} {...event} />
-            ))}
-          </SimpleGrid>
+          {events.length === 0 ? (
+            <Alert status="info">
+              <AlertIcon />
+              <AlertTitle>No events found</AlertTitle>
+              <AlertDescription>Check back later for upcoming events!</AlertDescription>
+            </Alert>
+          ) : (
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={8}>
+              {events.map((event) => (
+                <EventCard key={event._id} {...event} />
+              ))}
+            </SimpleGrid>
+          )}
         </VStack>
       </Container>
     </Box>

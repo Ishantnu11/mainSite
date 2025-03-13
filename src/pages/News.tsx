@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_ENDPOINTS } from '../config/api';
 import {
   Box,
   Container,
@@ -13,10 +14,14 @@ import {
   Tab,
   TabPanel,
   useColorModeValue,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
 } from '@chakra-ui/react';
 
 interface NewsItem {
-  id: string;
+  _id: string;
   title: string;
   description: string;
   type: 'news' | 'internship';
@@ -69,6 +74,7 @@ const News = () => {
   const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<any>(null);
 
   useEffect(() => {
     fetchNews();
@@ -76,15 +82,25 @@ const News = () => {
 
   const fetchNews = async () => {
     try {
-      const response = await fetch('http://localhost:5000/news');
+      console.log('Fetching from:', API_ENDPOINTS.news);
+      const response = await fetch(API_ENDPOINTS.news);
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch news');
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
       }
+      
       const data = await response.json();
+      console.log('Received data:', data);
       setNewsItems(data);
+      setError(null);
+      setErrorDetails(null);
     } catch (error) {
       console.error('Error fetching news:', error);
       setError('Failed to load news items');
+      setErrorDetails(error);
     } finally {
       setIsLoading(false);
     }
@@ -92,16 +108,31 @@ const News = () => {
 
   if (isLoading) {
     return (
-      <Container maxW={{ base: "100%", lg: "80%" }} py={12}>
-        <Text>Loading news...</Text>
+      <Container maxW="100%" py={12}>
+        <Alert status="info">
+          <AlertIcon />
+          <AlertTitle>Loading news...</AlertTitle>
+        </Alert>
       </Container>
     );
   }
 
   if (error) {
     return (
-      <Container maxW={{ base: "100%", lg: "80%" }} py={12}>
-        <Text color="red.500">{error}</Text>
+      <Container maxW="100%" py={12}>
+        <Alert status="error">
+          <AlertIcon />
+          <VStack align="start" spacing={2}>
+            <AlertTitle>{error}</AlertTitle>
+            <AlertDescription>
+              {errorDetails && (
+                <Text fontSize="sm" as="pre" whiteSpace="pre-wrap">
+                  {errorDetails.toString()}
+                </Text>
+              )}
+            </AlertDescription>
+          </VStack>
+        </Alert>
       </Container>
     );
   }
