@@ -3,17 +3,34 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 
 const app = express();
+
+// Updated CORS configuration
+const allowedOrigins = [
+  'http://localhost:5173',  // Vite dev server
+  'http://localhost:5000',  // Local backend
+  'https://gdg-gug.vercel.app',  // Production URL (update this with your Vercel domain)
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null // Vercel preview deployments
+].filter(Boolean);
+
 app.use(cors({
-  origin: 'http://localhost:5173', // Your frontend URL
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'DELETE', 'PUT'],
   credentials: true
 }));
+
 app.use(express.json());
 
-mongoose.connect('mongodb+srv://rghv064:kronos@cluster0.n2fva.mongodb.net/yourdbname?retryWrites=true&w=majority', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+// Use environment variable for MongoDB connection
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://rghv064:kronos@cluster0.n2fva.mongodb.net/yourdbname?retryWrites=true&w=majority';
+
+// Connect to MongoDB
+mongoose.connect(MONGODB_URI)
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('MongoDB connection error:', err));
 
@@ -106,3 +123,6 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+// For Vercel, we need to export the Express app
+export default app;

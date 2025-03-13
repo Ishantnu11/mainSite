@@ -28,6 +28,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { FaEdit, FaTrash } from 'react-icons/fa';
+import { API_ENDPOINTS } from '../config/api'
 
 interface Event {
   _id?: string;  // MongoDB uses _id
@@ -107,7 +108,7 @@ const Admin = () => {
 
   const fetchNewsItems = async () => {
     try {
-      const response = await fetch('http://localhost:5000/news');
+      const response = await fetch(API_ENDPOINTS.news);
       if (!response.ok) {
         throw new Error('Failed to fetch news items');
       }
@@ -125,7 +126,7 @@ const Admin = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch('http://localhost:5000/events');
+      const response = await fetch(API_ENDPOINTS.events);
       if (!response.ok) {
         throw new Error('Failed to fetch events');
       }
@@ -143,7 +144,7 @@ const Admin = () => {
 
   const fetchTeamMembers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/team-members');
+      const response = await fetch(API_ENDPOINTS.team);
       if (!response.ok) {
         throw new Error('Failed to fetch team members');
       }
@@ -178,7 +179,7 @@ const Admin = () => {
     };
     
     try {
-      const response = await fetch('http://localhost:5000/events', {
+      const response = await fetch(API_ENDPOINTS.events, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -222,10 +223,8 @@ const Admin = () => {
       date: new Date(newsForm.date).toISOString()
     };
     
-    console.log('Sending news data:', newsData); // Debug log
-
     try {
-      const response = await fetch('http://localhost:5000/news', {
+      const response = await fetch(API_ENDPOINTS.news, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -233,18 +232,10 @@ const Admin = () => {
         body: JSON.stringify(newsData),
       });
 
-      console.log('Response status:', response.status); // Debug log
-
       if (!response.ok) {
-        const errorData = await response.text();
-        console.error('Error response:', errorData); // Debug log
         throw new Error('Failed to add news item');
       }
 
-      const newNews = await response.json();
-      console.log('Successfully added news item:', newNews); // Debug log
-      
-      // Refresh the news items list
       await fetchNewsItems();
       
       toast({
@@ -253,7 +244,6 @@ const Admin = () => {
         duration: 3000,
       });
       
-      // Reset form
       setNewsForm({
         title: '',
         description: '',
@@ -280,7 +270,7 @@ const Admin = () => {
     setIsLoading(true);
     
     try {
-      const response = await fetch('http://localhost:5000/team-members', {
+      const response = await fetch(API_ENDPOINTS.team, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -326,17 +316,17 @@ const Admin = () => {
       let endpoint = '';
       switch (type) {
         case 'event':
-          endpoint = `/events/${id}`;
+          endpoint = `${API_ENDPOINTS.events}/${id}`;
           break;
         case 'news':
-          endpoint = `/news/${id}`;
+          endpoint = `${API_ENDPOINTS.news}/${id}`;
           break;
         case 'team':
-          endpoint = `/team-members/${id}`;
+          endpoint = `${API_ENDPOINTS.team}/${id}`;
           break;
       }
 
-      const response = await fetch(`http://localhost:5000${endpoint}`, {
+      const response = await fetch(endpoint, {
         method: 'DELETE',
       });
 

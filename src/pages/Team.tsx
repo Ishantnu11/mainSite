@@ -1,6 +1,7 @@
 import { Box, Container, Heading, Text, SimpleGrid, VStack, Image, HStack, Link, Icon } from '@chakra-ui/react'
 import { FaLinkedin, FaTwitter, FaGithub } from 'react-icons/fa'
 import { useState, useEffect } from 'react'
+import { API_ENDPOINTS } from '../config/api'
 
 interface TeamMember {
   _id: string;
@@ -78,7 +79,7 @@ const Team = () => {
 
   const fetchTeamMembers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/team-members');
+      const response = await fetch(API_ENDPOINTS.team);
       if (!response.ok) {
         throw new Error('Failed to fetch team members');
       }

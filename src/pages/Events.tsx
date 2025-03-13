@@ -1,5 +1,6 @@
 import { Box, Container, Heading, Text, SimpleGrid, Button, VStack, Badge, Image } from '@chakra-ui/react'
 import { useState, useEffect } from 'react'
+import { API_ENDPOINTS } from '../config/api'
 
 interface Event {
   _id: string;
@@ -34,7 +35,7 @@ const Events = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch('http://localhost:5000/events');
+      const response = await fetch(API_ENDPOINTS.events);
       if (!response.ok) {
         throw new Error('Failed to fetch events');
       }
