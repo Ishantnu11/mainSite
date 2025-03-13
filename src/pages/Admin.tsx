@@ -49,7 +49,7 @@ interface NewsItem {
 }
 
 interface TeamMember {
-  _id?: string;  // MongoDB uses _id
+  _id?: string;
   name: string;
   role: string;
   image: string;
@@ -87,7 +87,7 @@ const Admin = () => {
   });
 
   // Team member form state
-  const [teamForm, setTeamForm] = useState({
+  const [teamForm, setTeamForm] = useState<TeamMember>({
     name: '',
     role: '',
     image: '',
@@ -564,16 +564,23 @@ const Admin = () => {
                   </FormControl>
                   <FormControl isRequired>
                     <FormLabel>Role</FormLabel>
-                    <Input
+                    <Select
                       value={teamForm.role}
                       onChange={(e) => setTeamForm({ ...teamForm, role: e.target.value })}
-                    />
+                    >
+                      <option value="">Select Role</option>
+                      <option value="GDG Head">GDG Head</option>
+                      <option value="Tech Lead">Tech Lead</option>
+                      <option value="Core Team">Core Team</option>
+                      <option value="Member">Member</option>
+                    </Select>
                   </FormControl>
                   <FormControl isRequired>
                     <FormLabel>Image URL</FormLabel>
                     <Input
                       value={teamForm.image}
                       onChange={(e) => setTeamForm({ ...teamForm, image: e.target.value })}
+                      placeholder="https://example.com/image.jpg"
                     />
                   </FormControl>
                   <FormControl>
@@ -581,6 +588,7 @@ const Admin = () => {
                     <Input
                       value={teamForm.linkedin}
                       onChange={(e) => setTeamForm({ ...teamForm, linkedin: e.target.value })}
+                      placeholder="https://linkedin.com/in/username"
                     />
                   </FormControl>
                   <FormControl>
@@ -588,6 +596,7 @@ const Admin = () => {
                     <Input
                       value={teamForm.twitter}
                       onChange={(e) => setTeamForm({ ...teamForm, twitter: e.target.value })}
+                      placeholder="https://twitter.com/username"
                     />
                   </FormControl>
                   <FormControl>
@@ -595,9 +604,15 @@ const Admin = () => {
                     <Input
                       value={teamForm.github}
                       onChange={(e) => setTeamForm({ ...teamForm, github: e.target.value })}
+                      placeholder="https://github.com/username"
                     />
                   </FormControl>
-                  <Button type="submit" colorScheme="blue">
+                  <Button 
+                    type="submit" 
+                    colorScheme="blue"
+                    isLoading={isLoading}
+                    loadingText="Adding..."
+                  >
                     Add Team Member
                   </Button>
                 </VStack>

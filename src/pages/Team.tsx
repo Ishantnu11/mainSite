@@ -1,4 +1,4 @@
-import { Box, Container, Heading, Text, SimpleGrid, VStack, Image, HStack, Link, Icon } from '@chakra-ui/react'
+import { Box, Container, Heading, Text, SimpleGrid, VStack, Image, HStack, Link, Icon, Alert, AlertIcon, AlertTitle, AlertDescription } from '@chakra-ui/react'
 import { FaLinkedin, FaTwitter, FaGithub } from 'react-icons/fa'
 import { useState, useEffect } from 'react'
 import { API_ENDPOINTS } from '../config/api'
@@ -8,13 +8,12 @@ interface TeamMember {
   name: string;
   role: string;
   image: string;
-  isLead?: boolean;
   linkedin?: string;
   twitter?: string;
   github?: string;
 }
 
-const TeamMember = ({ name, role, image, isLead = false, linkedin, twitter, github }: TeamMember) => {
+const TeamMemberCard = ({ name, role, image, linkedin, twitter, github }: TeamMember) => {
   return (
     <VStack 
       bg="white" 
@@ -22,7 +21,7 @@ const TeamMember = ({ name, role, image, isLead = false, linkedin, twitter, gith
       rounded="lg" 
       spacing={4} 
       align="center"
-      shadow={isLead ? "lg" : "md"}
+      shadow="md"
       borderTop="4px solid"
       borderColor={role === "GDG Head" ? "google.blue" : role === "Tech Lead" ? "google.red" : "transparent"}
       transition="all 0.2s"
@@ -31,36 +30,36 @@ const TeamMember = ({ name, role, image, isLead = false, linkedin, twitter, gith
       <Image 
         src={image} 
         alt={name} 
-        boxSize={isLead ? "160px" : "140px"} 
+        boxSize="140px"
         rounded="full" 
         objectFit="cover" 
       />
       <Heading 
-        size={isLead ? "lg" : "md"} 
-        color={isLead ? "google.blue" : "gray.700"}
+        size="md"
+        color="gray.700"
       >
         {name}
       </Heading>
       <Text 
-        color={isLead ? "google.red" : "gray.600"} 
-        fontWeight={isLead ? "bold" : "medium"}
+        color="gray.600"
+        fontWeight="medium"
       >
         {role}
       </Text>
       <HStack spacing={4}>
         {linkedin && (
           <Link href={linkedin} isExternal>
-            <Icon as={FaLinkedin} boxSize={{ base: 5, md: 6 }} color="linkedin.500" />
+            <Icon as={FaLinkedin} boxSize={6} color="linkedin.500" />
           </Link>
         )}
         {twitter && (
           <Link href={twitter} isExternal>
-            <Icon as={FaTwitter} boxSize={{ base: 5, md: 6 }} color="twitter.500" />
+            <Icon as={FaTwitter} boxSize={6} color="twitter.500" />
           </Link>
         )}
         {github && (
           <Link href={github} isExternal>
-            <Icon as={FaGithub} boxSize={{ base: 5, md: 6 }} color="gray.700" />
+            <Icon as={FaGithub} boxSize={6} color="gray.700" />
           </Link>
         )}
       </HStack>
@@ -72,6 +71,7 @@ const Team = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetails, setErrorDetails] = useState<any>(null);
 
   useEffect(() => {
     fetchTeamMembers();
@@ -79,15 +79,25 @@ const Team = () => {
 
   const fetchTeamMembers = async () => {
     try {
+      console.log('Fetching from:', API_ENDPOINTS.team);
       const response = await fetch(API_ENDPOINTS.team);
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch team members');
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
       }
+      
       const data = await response.json();
+      console.log('Received data:', data);
       setTeamMembers(data);
+      setError(null);
+      setErrorDetails(null);
     } catch (error) {
       console.error('Error fetching team members:', error);
       setError('Failed to load team members');
+      setErrorDetails(error);
     } finally {
       setIsLoading(false);
     }
@@ -96,7 +106,10 @@ const Team = () => {
   if (isLoading) {
     return (
       <Container maxW="100%" py={12}>
-        <Text>Loading team members...</Text>
+        <Alert status="info">
+          <AlertIcon />
+          <AlertTitle>Loading team members...</AlertTitle>
+        </Alert>
       </Container>
     );
   }
@@ -104,7 +117,19 @@ const Team = () => {
   if (error) {
     return (
       <Container maxW="100%" py={12}>
-        <Text color="red.500">{error}</Text>
+        <Alert status="error">
+          <AlertIcon />
+          <VStack align="start" spacing={2}>
+            <AlertTitle>{error}</AlertTitle>
+            <AlertDescription>
+              {errorDetails && (
+                <Text fontSize="sm" as="pre" whiteSpace="pre-wrap">
+                  {errorDetails.toString()}
+                </Text>
+              )}
+            </AlertDescription>
+          </VStack>
+        </Alert>
       </Container>
     );
   }
@@ -119,15 +144,23 @@ const Team = () => {
               Meet the amazing people behind GDG Community
             </Text>
           </Box>
-          <SimpleGrid 
-            columns={{ base: 1, sm: 2, lg: 3 }} 
-            spacing={8}
-            mx="auto"
-          >
-            {teamMembers.map((member) => (
-              <TeamMember key={member._id} {...member} />
-            ))}
-          </SimpleGrid>
+          {teamMembers.length === 0 ? (
+            <Alert status="info">
+              <AlertIcon />
+              <AlertTitle>No team members found</AlertTitle>
+              <AlertDescription>Team members will be added soon!</AlertDescription>
+            </Alert>
+          ) : (
+            <SimpleGrid 
+              columns={{ base: 1, sm: 2, lg: 3 }} 
+              spacing={8}
+              mx="auto"
+            >
+              {teamMembers.map((member) => (
+                <TeamMemberCard key={member._id} {...member} />
+              ))}
+            </SimpleGrid>
+          )}
         </VStack>
       </Container>
     </Box>
