@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -66,36 +66,49 @@ const NewsCard: React.FC<{ item: NewsItem }> = ({ item }) => {
 };
 
 const News = () => {
-  // Sample data - in a real app, this would come from your backend/state management
-  const sampleNews: NewsItem[] = [
-    {
-      id: '1',
-      type: 'news',
-      title: 'GDG Gurugram Hosts Successful DevFest 2024',
-      description: 'Over 500 developers gathered for our annual DevFest, featuring talks on AI, Cloud, and Mobile development.',
-      date: '2024-02-15T00:00:00Z'
-    },
-    {
-      id: '2',
-      type: 'internship',
-      title: 'Summer Internship Program 2024',
-      description: 'Join our 3-month internship program focused on full-stack development with modern technologies.',
-      company: 'Google',
-      location: 'Gurugram',
-      date: '2024-03-01T00:00:00Z'
-    },
-    {
-      id: '3',
-      type: 'news',
-      title: 'New Flutter Workshop Series',
-      description: 'Join us for a series of hands-on workshops covering Flutter development from basics to advanced topics.',
-      date: '2024-03-10T00:00:00Z'
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchNews();
+  }, []);
+
+  const fetchNews = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/news');
+      if (!response.ok) {
+        throw new Error('Failed to fetch news');
+      }
+      const data = await response.json();
+      setNewsItems(data);
+    } catch (error) {
+      console.error('Error fetching news:', error);
+      setError('Failed to load news items');
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
+
+  if (isLoading) {
+    return (
+      <Container maxW={{ base: "100%", lg: "80%" }} py={12}>
+        <Text>Loading news...</Text>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxW={{ base: "100%", lg: "80%" }} py={12}>
+        <Text color="red.500">{error}</Text>
+      </Container>
+    );
+  }
 
   const filterItems = (type?: 'news' | 'internship') => {
-    if (!type) return sampleNews;
-    return sampleNews.filter(item => item.type === type);
+    if (!type) return newsItems;
+    return newsItems.filter(item => item.type === type);
   };
 
   return (
@@ -114,7 +127,7 @@ const News = () => {
             <TabPanel px={0}>
               <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
                 {filterItems().map(item => (
-                  <NewsCard key={item.id} item={item} />
+                  <NewsCard key={item._id} item={item} />
                 ))}
               </SimpleGrid>
             </TabPanel>
@@ -122,7 +135,7 @@ const News = () => {
             <TabPanel px={0}>
               <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
                 {filterItems('news').map(item => (
-                  <NewsCard key={item.id} item={item} />
+                  <NewsCard key={item._id} item={item} />
                 ))}
               </SimpleGrid>
             </TabPanel>
@@ -130,7 +143,7 @@ const News = () => {
             <TabPanel px={0}>
               <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
                 {filterItems('internship').map(item => (
-                  <NewsCard key={item.id} item={item} />
+                  <NewsCard key={item._id} item={item} />
                 ))}
               </SimpleGrid>
             </TabPanel>

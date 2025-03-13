@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -30,7 +30,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaEdit, FaTrash } from 'react-icons/fa';
 
 interface Event {
-  id: string;
+  _id?: string;  // MongoDB uses _id
   title: string;
   date: string;
   description: string;
@@ -38,7 +38,7 @@ interface Event {
 }
 
 interface NewsItem {
-  id: string;
+  _id?: string;  // MongoDB uses _id
   title: string;
   description: string;
   type: 'news' | 'internship';
@@ -48,7 +48,7 @@ interface NewsItem {
 }
 
 interface TeamMember {
-  id: string;
+  _id?: string;  // MongoDB uses _id
   name: string;
   role: string;
   image: string;
@@ -95,6 +95,70 @@ const Admin = () => {
     github: ''
   });
 
+  // Add state for loading and error
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Fetch all data when component mounts
+  useEffect(() => {
+    fetchNewsItems();
+    fetchEvents();
+    fetchTeamMembers();
+  }, []);
+
+  const fetchNewsItems = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/news');
+      if (!response.ok) {
+        throw new Error('Failed to fetch news items');
+      }
+      const data = await response.json();
+      setNewsItems(data);
+    } catch (error) {
+      console.error('Error fetching news:', error);
+      toast({
+        title: 'Error fetching news items',
+        status: 'error',
+        duration: 3000,
+      });
+    }
+  };
+
+  const fetchEvents = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/events');
+      if (!response.ok) {
+        throw new Error('Failed to fetch events');
+      }
+      const data = await response.json();
+      setEvents(data);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      toast({
+        title: 'Error fetching events',
+        status: 'error',
+        duration: 3000,
+      });
+    }
+  };
+
+  const fetchTeamMembers = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/team-members');
+      if (!response.ok) {
+        throw new Error('Failed to fetch team members');
+      }
+      const data = await response.json();
+      setTeamMembers(data);
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+      toast({
+        title: 'Error fetching team members',
+        status: 'error',
+        duration: 3000,
+      });
+    }
+  };
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -104,83 +168,208 @@ const Admin = () => {
     }
   };
 
-  const handleEventSubmit = (e: React.FormEvent) => {
+  const handleEventSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newEvent: Event = {
-      id: Date.now().toString(),
-      ...eventForm
+    setIsLoading(true);
+    
+    const eventData = {
+      ...eventForm,
+      date: new Date(eventForm.date).toISOString()
     };
-    setEvents([...events, newEvent]);
-    toast({
-      title: 'Event added successfully',
-      status: 'success',
-      duration: 3000,
-    });
-    setEventForm({ title: '', date: '', description: '', image: '' });
+    
+    try {
+      const response = await fetch('http://localhost:5000/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(eventData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add event');
+      }
+
+      await fetchEvents();
+      
+      toast({
+        title: 'Event added successfully',
+        status: 'success',
+        duration: 3000,
+      });
+      
+      setEventForm({ title: '', date: '', description: '', image: '' });
+    } catch (error) {
+      console.error('Error adding event:', error);
+      toast({
+        title: 'Error adding event',
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        status: 'error',
+        duration: 3000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleNewsSubmit = (e: React.FormEvent) => {
+  const handleNewsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newNewsItem: NewsItem = {
-      id: Date.now().toString(),
+    setIsLoading(true);
+    
+    const newsData = {
       ...newsForm,
+      type: newsForm.type as 'news' | 'internship',
       date: new Date(newsForm.date).toISOString()
     };
-    setNewsItems([...newsItems, newNewsItem]);
-    toast({
-      title: 'News item added successfully',
-      status: 'success',
-      duration: 3000,
-    });
-    setNewsForm({
-      title: '',
-      description: '',
-      type: 'news',
-      company: '',
-      location: '',
-      date: new Date().toISOString().split('T')[0]
-    });
-  };
+    
+    console.log('Sending news data:', newsData); // Debug log
 
-  const handleTeamSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newTeamMember: TeamMember = {
-      id: Date.now().toString(),
-      ...teamForm
-    };
-    setTeamMembers([...teamMembers, newTeamMember]);
-    toast({
-      title: 'Team member added successfully',
-      status: 'success',
-      duration: 3000,
-    });
-    setTeamForm({
-      name: '',
-      role: '',
-      image: '',
-      linkedin: '',
-      twitter: '',
-      github: ''
-    });
-  };
+    try {
+      const response = await fetch('http://localhost:5000/news', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newsData),
+      });
 
-  const handleDelete = (type: 'event' | 'news' | 'team', id: string) => {
-    switch (type) {
-      case 'event':
-        setEvents(events.filter(event => event.id !== id));
-        break;
-      case 'news':
-        setNewsItems(newsItems.filter(item => item.id !== id));
-        break;
-      case 'team':
-        setTeamMembers(teamMembers.filter(member => member.id !== id));
-        break;
+      console.log('Response status:', response.status); // Debug log
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error('Error response:', errorData); // Debug log
+        throw new Error('Failed to add news item');
+      }
+
+      const newNews = await response.json();
+      console.log('Successfully added news item:', newNews); // Debug log
+      
+      // Refresh the news items list
+      await fetchNewsItems();
+      
+      toast({
+        title: 'News item added successfully',
+        status: 'success',
+        duration: 3000,
+      });
+      
+      // Reset form
+      setNewsForm({
+        title: '',
+        description: '',
+        type: 'news',
+        company: '',
+        location: '',
+        date: new Date().toISOString().split('T')[0]
+      });
+    } catch (error) {
+      console.error('Error adding news:', error);
+      toast({
+        title: 'Error adding news item',
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        status: 'error',
+        duration: 3000,
+      });
+    } finally {
+      setIsLoading(false);
     }
-    toast({
-      title: 'Item deleted successfully',
-      status: 'success',
-      duration: 3000,
-    });
+  };
+
+  const handleTeamSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch('http://localhost:5000/team-members', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(teamForm),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add team member');
+      }
+
+      await fetchTeamMembers();
+      
+      toast({
+        title: 'Team member added successfully',
+        status: 'success',
+        duration: 3000,
+      });
+      
+      setTeamForm({
+        name: '',
+        role: '',
+        image: '',
+        linkedin: '',
+        twitter: '',
+        github: ''
+      });
+    } catch (error) {
+      console.error('Error adding team member:', error);
+      toast({
+        title: 'Error adding team member',
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        status: 'error',
+        duration: 3000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDelete = async (type: 'event' | 'news' | 'team', id: string) => {
+    try {
+      let endpoint = '';
+      switch (type) {
+        case 'event':
+          endpoint = `/events/${id}`;
+          break;
+        case 'news':
+          endpoint = `/news/${id}`;
+          break;
+        case 'team':
+          endpoint = `/team-members/${id}`;
+          break;
+      }
+
+      const response = await fetch(`http://localhost:5000${endpoint}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete ${type}`);
+      }
+
+      // Refresh the appropriate list
+      switch (type) {
+        case 'event':
+          await fetchEvents();
+          break;
+        case 'news':
+          await fetchNewsItems();
+          break;
+        case 'team':
+          await fetchTeamMembers();
+          break;
+      }
+
+      toast({
+        title: `${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully`,
+        status: 'success',
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error(`Error deleting ${type}:`, error);
+      toast({
+        title: `Error deleting ${type}`,
+        status: 'error',
+        duration: 3000,
+      });
+    }
   };
 
   if (!isAdmin) {
@@ -255,7 +444,7 @@ const Admin = () => {
                     </Thead>
                     <Tbody>
                       {events.map((event) => (
-                        <Tr key={event.id}>
+                        <Tr key={event._id}>
                           <Td>{event.title}</Td>
                           <Td>{new Date(event.date).toLocaleDateString()}</Td>
                           <Td>
@@ -264,7 +453,7 @@ const Admin = () => {
                               icon={<FaTrash />}
                               colorScheme="red"
                               size="sm"
-                              onClick={() => handleDelete('event', event.id)}
+                              onClick={() => handleDelete('event', event._id as string)}
                             />
                           </Td>
                         </Tr>
@@ -329,7 +518,12 @@ const Admin = () => {
                       onChange={(e) => setNewsForm({ ...newsForm, date: e.target.value })}
                     />
                   </FormControl>
-                  <Button type="submit" colorScheme="blue">
+                  <Button 
+                    type="submit" 
+                    colorScheme="blue" 
+                    isLoading={isLoading}
+                    loadingText="Adding..."
+                  >
                     Add News Item
                   </Button>
                 </VStack>
@@ -346,7 +540,7 @@ const Admin = () => {
                     </Thead>
                     <Tbody>
                       {newsItems.map((item) => (
-                        <Tr key={item.id}>
+                        <Tr key={item._id}>
                           <Td>{item.title}</Td>
                           <Td>{item.type}</Td>
                           <Td>{new Date(item.date).toLocaleDateString()}</Td>
@@ -356,7 +550,7 @@ const Admin = () => {
                               icon={<FaTrash />}
                               colorScheme="red"
                               size="sm"
-                              onClick={() => handleDelete('news', item.id)}
+                              onClick={() => handleDelete('news', item._id as string)}
                             />
                           </Td>
                         </Tr>
@@ -429,7 +623,7 @@ const Admin = () => {
                     </Thead>
                     <Tbody>
                       {teamMembers.map((member) => (
-                        <Tr key={member.id}>
+                        <Tr key={member._id}>
                           <Td>{member.name}</Td>
                           <Td>{member.role}</Td>
                           <Td>
@@ -438,7 +632,7 @@ const Admin = () => {
                               icon={<FaTrash />}
                               colorScheme="red"
                               size="sm"
-                              onClick={() => handleDelete('team', member.id)}
+                              onClick={() => handleDelete('team', member._id as string)}
                             />
                           </Td>
                         </Tr>

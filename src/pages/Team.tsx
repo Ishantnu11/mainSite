@@ -1,7 +1,9 @@
 import { Box, Container, Heading, Text, SimpleGrid, VStack, Image, HStack, Link, Icon } from '@chakra-ui/react'
 import { FaLinkedin, FaTwitter, FaGithub } from 'react-icons/fa'
+import { useState, useEffect } from 'react'
 
 interface TeamMember {
+  _id: string;
   name: string;
   role: string;
   image: string;
@@ -66,40 +68,45 @@ const TeamMember = ({ name, role, image, isLead = false, linkedin, twitter, gith
 }
 
 const Team = () => {
-  const teamMembers: TeamMember[] = [
-    {
-      name: "Alice Johnson",
-      role: "GDG Head",
-      image: `https://api.dicebear.com/7.x/bottts/svg?seed=Alice&backgroundColor=4285f4`,
-      isLead: true
-    },
-    {
-      name: "Bob Smith",
-      role: "Tech Lead",
-      image: `https://api.dicebear.com/7.x/bottts/svg?seed=Bob&backgroundColor=ea4335`,
-      isLead: true
-    },
-    {
-      name: "Carol White",
-      role: "Community Manager",
-      image: `https://api.dicebear.com/7.x/bottts/svg?seed=Carol&backgroundColor=fbbc05`
-    },
-    {
-      name: "David Brown",
-      role: "Event Coordinator",
-      image: `https://api.dicebear.com/7.x/bottts/svg?seed=David&backgroundColor=34a853`
-    },
-    {
-      name: "Eva Green",
-      role: "Content Creator",
-      image: `https://api.dicebear.com/7.x/bottts/svg?seed=Eva&backgroundColor=4285f4`
-    },
-    {
-      name: "Frank Lee",
-      role: "Developer Relations",
-      image: `https://api.dicebear.com/7.x/bottts/svg?seed=Frank&backgroundColor=ea4335`
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchTeamMembers();
+  }, []);
+
+  const fetchTeamMembers = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/team-members');
+      if (!response.ok) {
+        throw new Error('Failed to fetch team members');
+      }
+      const data = await response.json();
+      setTeamMembers(data);
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+      setError('Failed to load team members');
+    } finally {
+      setIsLoading(false);
     }
-  ]
+  };
+
+  if (isLoading) {
+    return (
+      <Container maxW="100%" py={12}>
+        <Text>Loading team members...</Text>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxW="100%" py={12}>
+        <Text color="red.500">{error}</Text>
+      </Container>
+    );
+  }
 
   return (
     <Box w="full">
@@ -116,8 +123,8 @@ const Team = () => {
             spacing={8}
             mx="auto"
           >
-            {teamMembers.map((member, index) => (
-              <TeamMember key={index} {...member} />
+            {teamMembers.map((member) => (
+              <TeamMember key={member._id} {...member} />
             ))}
           </SimpleGrid>
         </VStack>
