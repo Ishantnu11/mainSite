@@ -1,6 +1,6 @@
-const API_BASE_URL = process.env.NODE_ENV === 'production' 
-  ? '/api' // In production, use relative path
-  : 'http://localhost:3000/api'; // In development, use localhost
+const API_BASE_URL = process.env.NODE_ENV === 'production'
+  ? '' // In production, use relative path
+  : import.meta.env.VITE_API_URL || 'http://localhost:5000'; // In development, use environment variable or fallback
 
 export const API_ENDPOINTS = {
   events: `${API_BASE_URL}/events`,
