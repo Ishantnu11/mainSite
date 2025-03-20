@@ -24,6 +24,8 @@ import {
   Th,
   Td,
   IconButton,
+  Badge,
+  SimpleGrid,
 } from '@chakra-ui/react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -36,6 +38,8 @@ interface Event {
   date: string;
   description: string;
   image: string;
+  link?: string;
+  status: 'upcoming' | 'ongoing' | 'past';
 }
 
 interface NewsItem {
@@ -73,7 +77,9 @@ const Admin = () => {
     title: '',
     date: '',
     description: '',
-    image: ''
+    image: '',
+    link: '',
+    status: 'upcoming'
   });
 
   // News form state
@@ -199,7 +205,7 @@ const Admin = () => {
         duration: 3000,
       });
       
-      setEventForm({ title: '', date: '', description: '', image: '' });
+      setEventForm({ title: '', date: '', description: '', image: '', link: '', status: 'upcoming' });
     } catch (error) {
       console.error('Error adding event:', error);
       toast({
@@ -368,88 +374,273 @@ const Admin = () => {
   }
 
   return (
-    <Box w="full">
-      <Container maxW={{ base: "100%", lg: "80%" }} py={{ base: 8, md: 12 }} px={{ base: 4, md: 8 }}>
-        <Grid templateColumns="1fr auto" alignItems="center" mb={8}>
-          <Heading>Admin Dashboard</Heading>
-          <Button onClick={handleLogout} colorScheme="red" variant="outline">
+    <Box 
+      minH="100vh" 
+      bg="gray.900" 
+      color="white"
+      position="relative"
+      overflow="hidden"
+    >
+      {/* Background Effects */}
+      <Box
+        position="absolute"
+        top="5%"
+        left="20%"
+        width="600px"
+        height="600px"
+        background="radial-gradient(circle, rgba(25, 118, 210, 0.1) 0%, transparent 70%)"
+        filter="blur(40px)"
+        zIndex={0}
+      />
+      <Box
+        position="absolute"
+        top="40%"
+        right="10%"
+        width="500px"
+        height="500px"
+        background="radial-gradient(circle, rgba(156, 39, 176, 0.1) 0%, transparent 70%)"
+        filter="blur(40px)"
+        zIndex={0}
+      />
+
+      <Container maxW="container.xl" py={8} position="relative" zIndex={1}>
+        <Grid templateColumns="1fr auto" alignItems="center" mb={8} gap={4}>
+          <Heading 
+            size="xl"
+            bgGradient="linear(to-r, blue.400, purple.500)"
+            bgClip="text"
+            letterSpacing="tight"
+          >
+            Admin Dashboard
+          </Heading>
+          <Button 
+            onClick={handleLogout} 
+            colorScheme="red" 
+            variant="ghost"
+            _hover={{
+              bg: 'rgba(254, 178, 178, 0.12)',
+              transform: 'translateY(-2px)'
+            }}
+          >
             Logout
           </Button>
         </Grid>
 
-        <Tabs isFitted variant="enclosed">
-          <TabList mb="1em">
-            <Tab>Events</Tab>
-            <Tab>News</Tab>
-            <Tab>Team</Tab>
+        <Tabs 
+          variant="soft-rounded" 
+          colorScheme="blue" 
+          isLazy
+          bg="gray.800"
+          p={4}
+          borderRadius="xl"
+          boxShadow="xl"
+        >
+          <TabList mb={6} gap={4}>
+            <Tab 
+              _selected={{ 
+                color: 'blue.800', 
+                bg: 'blue.100',
+                fontWeight: 'semibold' 
+              }}
+              color="gray.100"
+            >
+              Events
+            </Tab>
+            <Tab 
+              _selected={{ 
+                color: 'green.800', 
+                bg: 'green.100',
+                fontWeight: 'semibold'
+              }}
+              color="gray.100"
+            >
+              News
+            </Tab>
+            <Tab 
+              _selected={{ 
+                color: 'purple.800', 
+                bg: 'purple.100',
+                fontWeight: 'semibold'
+              }}
+              color="gray.100"
+            >
+              Team
+            </Tab>
           </TabList>
 
           <TabPanels>
             <TabPanel>
               <VStack spacing={8} align="stretch">
-                <VStack as="form" spacing={4} align="stretch" onSubmit={handleEventSubmit}>
-                  <Heading size="md">Add New Event</Heading>
-                  <FormControl isRequired>
-                    <FormLabel>Title</FormLabel>
-                    <Input
-                      value={eventForm.title}
-                      onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
-                    />
-                  </FormControl>
-                  <FormControl isRequired>
-                    <FormLabel>Date</FormLabel>
-                    <Input
-                      type="date"
-                      value={eventForm.date}
-                      onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
-                    />
-                  </FormControl>
-                  <FormControl isRequired>
-                    <FormLabel>Description</FormLabel>
-                    <Textarea
-                      value={eventForm.description}
-                      onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
-                    />
-                  </FormControl>
-                  <FormControl isRequired>
-                    <FormLabel>Image URL</FormLabel>
-                    <Input
-                      value={eventForm.image}
-                      onChange={(e) => setEventForm({ ...eventForm, image: e.target.value })}
-                    />
-                  </FormControl>
-                  <Button type="submit" colorScheme="blue">
-                    Add Event
-                  </Button>
-                </VStack>
+                <Box 
+                  bg="gray.700" 
+                  p={6} 
+                  borderRadius="lg"
+                  boxShadow="md"
+                  backdropFilter="blur(10px)"
+                  border="1px solid"
+                  borderColor="gray.600"
+                >
+                  <Heading size="md" mb={6} color="blue.100">Add New Event</Heading>
+                  <VStack as="form" spacing={6} align="stretch" onSubmit={handleEventSubmit}>
+                    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+                      <FormControl isRequired>
+                        <FormLabel color="gray.200">Title</FormLabel>
+                        <Input
+                          value={eventForm.title}
+                          onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                          bg="gray.800"
+                          border="1px solid"
+                          borderColor="gray.600"
+                          _hover={{ borderColor: 'blue.400' }}
+                          _focus={{ borderColor: 'blue.400', boxShadow: 'none' }}
+                        />
+                      </FormControl>
+                      <FormControl isRequired>
+                        <FormLabel color="gray.200">Date</FormLabel>
+                        <Input
+                          type="date"
+                          value={eventForm.date}
+                          onChange={(e) => setEventForm({ ...eventForm, date: e.target.value })}
+                          bg="gray.800"
+                          border="1px solid"
+                          borderColor="gray.600"
+                          _hover={{ borderColor: 'blue.400' }}
+                          _focus={{ borderColor: 'blue.400', boxShadow: 'none' }}
+                        />
+                      </FormControl>
+                    </SimpleGrid>
 
-                <Box overflowX="auto">
-                  <Table variant="simple">
-                    <Thead>
-                      <Tr>
-                        <Th>Title</Th>
-                        <Th>Date</Th>
-                        <Th>Actions</Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {events.map((event) => (
-                        <Tr key={event._id}>
-                          <Td>{event.title}</Td>
-                          <Td>{new Date(event.date).toLocaleDateString()}</Td>
-                          <Td>
-                            <IconButton
-                              aria-label="Delete event"
-                              icon={<FaTrash />}
-                              colorScheme="red"
-                              size="sm"
-                              onClick={() => handleDelete('event', event._id as string)}
-                            />
-                          </Td>
+                    <FormControl isRequired>
+                      <FormLabel color="gray.200">Status</FormLabel>
+                      <Select
+                        value={eventForm.status}
+                        onChange={(e) => setEventForm({ ...eventForm, status: e.target.value as Event['status'] })}
+                        bg="gray.800"
+                        border="1px solid"
+                        borderColor="gray.600"
+                        _hover={{ borderColor: 'blue.400' }}
+                        _focus={{ borderColor: 'blue.400', boxShadow: 'none' }}
+                      >
+                        <option value="upcoming">Upcoming</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="past">Past</option>
+                      </Select>
+                    </FormControl>
+
+                    <FormControl isRequired>
+                      <FormLabel color="gray.200">Description</FormLabel>
+                      <Textarea
+                        value={eventForm.description}
+                        onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                        bg="gray.800"
+                        border="1px solid"
+                        borderColor="gray.600"
+                        _hover={{ borderColor: 'blue.400' }}
+                        _focus={{ borderColor: 'blue.400', boxShadow: 'none' }}
+                        rows={4}
+                      />
+                    </FormControl>
+
+                    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
+                      <FormControl isRequired>
+                        <FormLabel color="gray.200">Image URL</FormLabel>
+                        <Input
+                          value={eventForm.image}
+                          onChange={(e) => setEventForm({ ...eventForm, image: e.target.value })}
+                          bg="gray.800"
+                          border="1px solid"
+                          borderColor="gray.600"
+                          _hover={{ borderColor: 'blue.400' }}
+                          _focus={{ borderColor: 'blue.400', boxShadow: 'none' }}
+                        />
+                      </FormControl>
+                      <FormControl>
+                        <FormLabel color="gray.200">Registration Link</FormLabel>
+                        <Input
+                          value={eventForm.link}
+                          onChange={(e) => setEventForm({ ...eventForm, link: e.target.value })}
+                          placeholder="https://example.com/register"
+                          bg="gray.800"
+                          border="1px solid"
+                          borderColor="gray.600"
+                          _hover={{ borderColor: 'blue.400' }}
+                          _focus={{ borderColor: 'blue.400', boxShadow: 'none' }}
+                        />
+                      </FormControl>
+                    </SimpleGrid>
+
+                    <Button 
+                      type="submit" 
+                      colorScheme="blue"
+                      size="lg"
+                      isLoading={isLoading}
+                      _hover={{
+                        transform: 'translateY(-2px)',
+                        boxShadow: 'lg',
+                      }}
+                    >
+                      Add Event
+                    </Button>
+                  </VStack>
+                </Box>
+
+                <Box 
+                  bg="gray.700" 
+                  p={6} 
+                  borderRadius="lg"
+                  boxShadow="md"
+                  backdropFilter="blur(10px)"
+                  border="1px solid"
+                  borderColor="gray.600"
+                >
+                  <Heading size="md" mb={6} color="blue.100">Manage Events</Heading>
+                  <Box overflowX="auto">
+                    <Table variant="simple">
+                      <Thead>
+                        <Tr>
+                          <Th color="gray.300">Title</Th>
+                          <Th color="gray.300">Date</Th>
+                          <Th color="gray.300">Status</Th>
+                          <Th color="gray.300">Actions</Th>
                         </Tr>
-                      ))}
-                    </Tbody>
-                  </Table>
+                      </Thead>
+                      <Tbody>
+                        {events.map((event) => (
+                          <Tr key={event._id}>
+                            <Td color="gray.100">{event.title}</Td>
+                            <Td color="gray.100">{new Date(event.date).toLocaleDateString()}</Td>
+                            <Td>
+                              <Badge
+                                colorScheme={
+                                  event.status === 'upcoming'
+                                    ? 'blue'
+                                    : event.status === 'ongoing'
+                                    ? 'green'
+                                    : 'purple'
+                                }
+                              >
+                                {event.status}
+                              </Badge>
+                            </Td>
+                            <Td>
+                              <IconButton
+                                aria-label="Delete event"
+                                icon={<FaTrash />}
+                                colorScheme="red"
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleDelete('event', event._id as string)}
+                                _hover={{
+                                  bg: 'rgba(254, 178, 178, 0.12)',
+                                  transform: 'translateY(-2px)'
+                                }}
+                              />
+                            </Td>
+                          </Tr>
+                        ))}
+                      </Tbody>
+                    </Table>
+                  </Box>
                 </Box>
               </VStack>
             </TabPanel>

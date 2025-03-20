@@ -11,9 +11,11 @@ import {
   IconButton,
   Link,
   useColorModeValue,
+  Divider,
 } from '@chakra-ui/react';
 import { FaLinkedin, FaTwitter, FaGithub } from 'react-icons/fa';
 import { API_ENDPOINTS } from '../config/apiEndpoints';
+import JoinUs from './JoinUs';
 
 interface TeamMember {
   _id?: string;
@@ -49,8 +51,8 @@ const Team = () => {
   }, []);
 
   return (
-    <Box as="section" py={{ base: 12, md: 16 }} bg={useColorModeValue('gray.50', 'gray.900')}>
-      <Container maxW="7xl">
+    <Box as="section" bg={useColorModeValue('gray.50', 'gray.900')}>
+      <Container maxW="8xl" py={{ base: 12, md: 16 }}>
         <VStack spacing={12} align="stretch">
           <Box textAlign="center">
             <Heading
@@ -68,7 +70,7 @@ const Team = () => {
             </Text>
           </Box>
 
-          <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={8}>
+          <SimpleGrid columns={{ base: 1, sm: 2, lg: 4, xl: 5 }} spacing={8}>
             {teamMembers.map((member) => (
               <Box
                 key={member._id}
@@ -168,6 +170,11 @@ const Team = () => {
           </SimpleGrid>
         </VStack>
       </Container>
+      
+      <Divider my={8} />
+      
+      {/* Join Us Section */}
+      <JoinUs />
     </Box>
   );
 };

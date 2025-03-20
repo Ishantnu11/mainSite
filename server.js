@@ -39,7 +39,7 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://rghv064:kronos@clu
 
 // Connect to MongoDB
 mongoose.connect(MONGODB_URI)
-.then(() => console.log('Connected to MongoDB'))
+.then(() => console.log('Connected to MongoDB Atlas'))
 .catch(err => console.error('MongoDB connection error:', err));
 
 // Define schemas
@@ -48,6 +48,12 @@ const eventSchema = new mongoose.Schema({
   date: Date,
   description: String,
   image: String,
+  link: String,
+  status: {
+    type: String,
+    enum: ['upcoming', 'ongoing', 'past'],
+    default: 'upcoming'
+  }
 });
 
 const newsSchema = new mongoose.Schema({
@@ -76,19 +82,29 @@ const TeamMember = mongoose.model('TeamMember', teamMemberSchema);
 // API Routes
 app.get('/api/events', async (req, res) => {
   try {
-    const events = await Event.find();
+    const events = await Event.find().sort({ date: 1 });
     res.json(events);
   } catch (error) {
+    console.error('Error fetching events:', error);
     res.status(500).json({ error: 'Failed to fetch events' });
   }
 });
 
 app.post('/api/events', async (req, res) => {
   try {
-    const newEvent = new Event(req.body);
+    const { title, date, description, image, link, status } = req.body;
+    const newEvent = new Event({
+      title,
+      date: new Date(date),
+      description,
+      image,
+      link,
+      status: status || 'upcoming'
+    });
     await newEvent.save();
     res.json(newEvent);
   } catch (error) {
+    console.error('Error creating event:', error);
     res.status(500).json({ error: 'Failed to create event' });
   }
 });

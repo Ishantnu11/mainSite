@@ -1,151 +1,169 @@
 import {
   Box,
   Container,
+  Flex,
   HStack,
-  Text,
+  Link as ChakraLink,
   Button,
   IconButton,
   useDisclosure,
   VStack,
-  Drawer,
-  DrawerBody,
-  DrawerHeader,
-  DrawerOverlay,
-  DrawerContent,
-  DrawerCloseButton,
+  Image,
 } from '@chakra-ui/react'
-import { Link as RouterLink, useLocation } from 'react-router-dom'
-import { FaBars } from 'react-icons/fa'
+import { Link as RouterLink } from 'react-router-dom'
+import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons'
 import { useAuth } from '../contexts/AuthContext'
 
-const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) => {
-  const location = useLocation()
-  const isActive = location.pathname === to
-
-  return (
-    <RouterLink to={to}>
-      <Text
-        px={2}
-        py={1}
-        rounded="md"
-        fontWeight="medium"
-        color={isActive ? "google.blue" : "gray.600"}
-        _hover={{
-          textDecoration: 'none',
-          color: 'google.blue',
-        }}
-      >
-        {children}
-      </Text>
-    </RouterLink>
-  )
-}
-
-const NavLinks = () => (
-  <>
-    <NavLink to="/">Home</NavLink>
-    <NavLink to="/events">Events</NavLink>
-    <NavLink to="/news">News</NavLink>
-    <NavLink to="/team">Team</NavLink>
-  </>
-)
-
 const Navbar = () => {
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const { user, isAdmin } = useAuth()
+  const { isOpen, onToggle } = useDisclosure()
+  const { isAdmin } = useAuth()
+
+  const navItems = [
+    { name: 'Events', path: '/events' },
+    { name: 'News', path: '/news' },
+    { name: 'Team', path: '/team' },
+  ]
+
+  if (isAdmin) {
+    navItems.push({ name: 'Admin', path: '/admin' })
+  }
 
   return (
-    <Box
-      as="nav"
-      bg="white"
-      shadow="sm"
-      position="sticky"
+    <Box 
+      position="fixed"
       top={0}
+      left={0}
+      right={0}
       zIndex={1000}
+      bg="rgba(0, 0, 0, 0.8)"
+      backdropFilter="blur(10px)"
+      borderBottom="1px solid"
+      borderColor="whiteAlpha.200"
     >
-      <Container maxW={{ base: "100%", lg: "80%" }} px={{ base: 4, md: 8 }}>
-        <HStack h={16} justify="space-between" spacing={8}>
-          <HStack spacing={4}>
+      <Container maxW="container.xl" py={4}>
+        <Flex justify="space-between" align="center">
+          <HStack spacing={4} as={RouterLink} to="/" _hover={{ textDecoration: 'none' }}>
             <Box
-              bg="google.blue"
-              color="white"
-              px={3}
-              py={1}
-              rounded="md"
-              fontWeight="bold"
+              width="40px"
+              height="40px"
+              borderRadius="full"
+              overflow="hidden"
+              border="2px solid"
+              borderColor="whiteAlpha.400"
+              transition="all 0.3s"
+              _hover={{ borderColor: "blue.400", transform: "scale(1.05)" }}
+              bg="white"
             >
-              GDG
+              <Image
+                src="src/assets/t2k7QK3r_400x400.png"
+                alt="GDG Logo"
+                width="100%"
+                height="100%"
+                objectFit="contain"
+                p="2px"
+              />
             </Box>
-            <Text fontWeight="medium">Gurugram</Text>
+            <Box
+              fontSize="xl"
+              fontWeight="bold"
+              color="white"
+              letterSpacing="tight"
+              _hover={{ color: "blue.400" }}
+              transition="all 0.3s"
+            >
+              GDG Gurugram
+            </Box>
           </HStack>
 
           {/* Desktop Navigation */}
           <HStack spacing={8} display={{ base: 'none', md: 'flex' }}>
-            <NavLinks />
-            {isAdmin ? (
-              <RouterLink to="/admin">
-                <Button colorScheme="blue" variant="outline">
-                  Admin Panel
-                </Button>
-              </RouterLink>
-            ) : user ? (
-              <RouterLink to="/login">
-                <Button colorScheme="blue" variant="outline">
-                  Dashboard
-                </Button>
-              </RouterLink>
-            ) : (
-              <RouterLink to="/login">
-                <Button colorScheme="blue" variant="outline">
-                  Login
-                </Button>
-              </RouterLink>
-            )}
+            {navItems.map((item) => (
+              <ChakraLink
+                key={item.path}
+                as={RouterLink}
+                to={item.path}
+                fontSize="md"
+                fontWeight="bold"
+                color="white"
+                _hover={{
+                  color: 'white',
+                  transform: 'translateY(-1px)',
+                  textShadow: '0 0 8px rgba(255, 255, 255, 0.5)'
+                }}
+                transition="all 0.2s"
+              >
+                {item.name}
+              </ChakraLink>
+            ))}
+            <Button
+              as={RouterLink}
+              to="/login"
+              variant="outline"
+              colorScheme="blue"
+              size="sm"
+              _hover={{
+                bg: 'whiteAlpha.200',
+                transform: 'translateY(-2px)',
+              }}
+            >
+              Login
+            </Button>
           </HStack>
 
-          {/* Mobile Menu Button */}
+          {/* Mobile Navigation Toggle */}
           <IconButton
             display={{ base: 'flex', md: 'none' }}
-            onClick={onOpen}
-            icon={<FaBars />}
-            aria-label="Open menu"
+            onClick={onToggle}
+            icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
             variant="ghost"
+            aria-label="Toggle Navigation"
+            color="white"
+            _hover={{ bg: 'whiteAlpha.200' }}
           />
-        </HStack>
-      </Container>
+        </Flex>
 
-      {/* Mobile Navigation Drawer */}
-      <Drawer isOpen={isOpen} placement="right" onClose={onClose}>
-        <DrawerOverlay />
-        <DrawerContent>
-          <DrawerCloseButton />
-          <DrawerHeader>Menu</DrawerHeader>
-          <DrawerBody>
-            <VStack align="stretch" spacing={4}>
-              <NavLinks />
-              {isAdmin ? (
-                <RouterLink to="/admin">
-                  <Button w="full" colorScheme="blue" variant="outline">
-                    Admin Panel
-                  </Button>
-                </RouterLink>
-              ) : user ? (
-                <RouterLink to="/login">
-                  <Button w="full" colorScheme="blue" variant="outline">
-                    Dashboard
-                  </Button>
-                </RouterLink>
-              ) : (
-                <RouterLink to="/login">
-                  <Button w="full" colorScheme="blue" variant="outline">
-                    Login
-                  </Button>
-                </RouterLink>
-              )}
-            </VStack>
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
+        {/* Mobile Navigation Menu */}
+        {isOpen && (
+          <VStack
+            display={{ base: 'flex', md: 'none' }}
+            py={4}
+            spacing={4}
+            align="stretch"
+          >
+            {navItems.map((item) => (
+              <ChakraLink
+                key={item.path}
+                as={RouterLink}
+                to={item.path}
+                fontSize="lg"
+                fontWeight="bold"
+                color="white"
+                onClick={onToggle}
+                _hover={{ 
+                  color: 'white',
+                  textShadow: '0 0 8px rgba(255, 255, 255, 0.5)'
+                }}
+                transition="all 0.2s"
+              >
+                {item.name}
+              </ChakraLink>
+            ))}
+            <Button
+              as={RouterLink}
+              to="/login"
+              variant="outline"
+              colorScheme="blue"
+              w="full"
+              _hover={{
+                bg: 'whiteAlpha.200',
+                transform: 'translateY(-2px)',
+              }}
+            >
+              Login
+            </Button>
+          </VStack>
+        )}
+      </Container>
     </Box>
   )
 }
