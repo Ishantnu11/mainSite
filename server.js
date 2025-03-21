@@ -3,6 +3,10 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -14,19 +18,32 @@ const allowedOrigins = [
   'http://localhost:5173',  // Vite dev server
   'http://localhost:5000',  // Local backend
   'https://gdg-gug.vercel.app',  // Production URL
-  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null // Vercel preview deployments
-].filter(Boolean);
+  'https://gdg-gug-git-main-akhilraghav0s-projects.vercel.app', // Main branch preview
+  'https://gdg-gug.vercel.app', // Production domain
+];
+
+// Add dynamic Vercel preview URLs if in preview deployment
+if (process.env.VERCEL_URL) {
+  allowedOrigins.push(`https://${process.env.VERCEL_URL}`);
+}
 
 app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'DELETE', 'PUT'],
-  credentials: true
+  origin: process.env.NODE_ENV === 'development' 
+    ? true // Allow all origins in development
+    : function(origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) === -1) {
+          const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+          return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+      },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200
 }));
 
 app.use(express.json());
@@ -34,13 +51,23 @@ app.use(express.json());
 // Serve static files from the dist directory
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// Use environment variable for MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://rghv064:kronos@cluster0.n2fva.mongodb.net/yourdbname?retryWrites=true&w=majority';
+// Serve assets directory for images
+app.use('/assets', express.static(path.join(__dirname, 'src/assets')));
 
-// Connect to MongoDB
+// Use environment variable for MongoDB connection
+const MONGODB_URI = process.env.MONGODB_URI;
+if (!MONGODB_URI) {
+  console.error('MONGODB_URI environment variable is not set');
+  process.exit(1);
+}
+
+// Connect to MongoDB with updated options
 mongoose.connect(MONGODB_URI)
 .then(() => console.log('Connected to MongoDB Atlas'))
-.catch(err => console.error('MongoDB connection error:', err));
+.catch(err => {
+  console.error('MongoDB connection error:', err);
+  process.exit(1);
+});
 
 // Define schemas
 const eventSchema = new mongoose.Schema({
@@ -179,9 +206,10 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log('Allowed Origins:', allowedOrigins);
 });
 
 export default app;

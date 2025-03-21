@@ -9,6 +9,11 @@ import {
   useDisclosure,
   VStack,
   Image,
+  Drawer,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
+  DrawerBody,
 } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons'
@@ -30,6 +35,7 @@ const Navbar = () => {
 
   return (
     <Box 
+      as="nav"
       position="fixed"
       top={0}
       left={0}
@@ -42,38 +48,40 @@ const Navbar = () => {
     >
       <Container maxW="container.xl" py={4}>
         <Flex justify="space-between" align="center">
-          <HStack spacing={4} as={RouterLink} to="/" _hover={{ textDecoration: 'none' }}>
-            <Box
-              width="40px"
-              height="40px"
-              borderRadius="full"
-              overflow="hidden"
-              border="2px solid"
-              borderColor="whiteAlpha.400"
-              transition="all 0.3s"
-              _hover={{ borderColor: "blue.400", transform: "scale(1.05)" }}
-              bg="white"
-            >
-              <Image
-                src="src/assets/t2k7QK3r_400x400.png"
-                alt="GDG Logo"
-                width="100%"
-                height="100%"
-                objectFit="contain"
-                p="2px"
-              />
-            </Box>
-            <Box
-              fontSize="xl"
-              fontWeight="bold"
-              color="white"
-              letterSpacing="tight"
-              _hover={{ color: "blue.400" }}
-              transition="all 0.3s"
-            >
-              GDG Gurugram
-            </Box>
-          </HStack>
+          <ChakraLink as={RouterLink} to="/" _hover={{ textDecoration: 'none' }}>
+            <HStack spacing={3}>
+              <Box
+                w="40px"
+                h="40px"
+                borderRadius="full"
+                overflow="hidden"
+                border="2px solid"
+                borderColor="white"
+                transition="all 0.3s ease"
+                _hover={{
+                  borderColor: 'blue.400',
+                  transform: 'scale(1.05)',
+                }}
+              >
+                <Image
+                  src="https://i.imghippo.com/files/fbGE8705GLI.png"
+                  alt="GDG Logo"
+                  w="100%"
+                  h="100%"
+                  objectFit="cover"
+                  loading="eager"
+                />
+              </Box>
+              <Box
+                fontSize="xl"
+                fontWeight="bold"
+                bgGradient="linear(to-r, blue.400, purple.500)"
+                bgClip="text"
+              >
+                GDG Gurugram
+              </Box>
+            </HStack>
+          </ChakraLink>
 
           {/* Desktop Navigation */}
           <HStack spacing={8} display={{ base: 'none', md: 'flex' }}>

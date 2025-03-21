@@ -106,21 +106,31 @@ const Home = () => {
             maxW={{ base: 'full', lg: '600px' }}
             animate={floatAnimation}
           >
-            <HStack spacing={4} justify="center">
+            <Box
+              position="relative"
+              width="100%"
+              height="100%"
+            >
               <Image
-                src="src/assets/HEROiMAGE.png"
-                alt="Google Developers"
+                src="https://i.imghippo.com/files/Zkbh2677Hwk.png"
+                alt="Google for Developers"
                 w={{ base: "350px", md: "450px", lg: "600px" }}
                 h="auto"
                 objectFit="contain"
                 borderRadius="2xl"
-                filter="drop-shadow(0 0 20px rgba(66, 133, 244, 0.3))"
-                _hover={{
-                  transform: 'scale(1.02)',
-                  transition: 'transform 0.3s ease-in-out'
+                loading="eager"
+                onError={(e) => {
+                  console.error('Image failed to load:', e);
+                }}
+                sx={{
+                  filter: "drop-shadow(0 0 20px rgba(0, 112, 243, 0.2))",
+                  transition: "transform 0.3s ease-in-out",
+                  "&:hover": {
+                    transform: "scale(1.02)"
+                  }
                 }}
               />
-            </HStack>
+            </Box>
           </MotionBox>
         </Box>
       </Container>
@@ -176,12 +186,14 @@ const FeatureCard = ({ icon, title, description }: { icon: any; title: string; d
     borderWidth="1px"
     borderColor="gray.700"
     backdropFilter="blur(12px)"
-    _hover={{
-      transform: 'translateY(-4px)',
-      boxShadow: 'xl',
-      borderColor: 'gray.600'
+    sx={{
+      transition: "all 0.3s",
+      "&:hover": {
+        transform: "translateY(-4px)",
+        boxShadow: "xl",
+        borderColor: "gray.600"
+      }
     }}
-    transition="all 0.3s"
   >
     <VStack align="flex-start" spacing={4}>
       <Icon

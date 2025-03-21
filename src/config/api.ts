@@ -1,7 +1,15 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const getBaseUrl = () => {
+  return import.meta.env.VITE_API_URL || 'http://localhost:3000';
+};
 
 export const API_ENDPOINTS = {
-  events: `${BASE_URL}/api/events`,
-  news: `${BASE_URL}/api/news`,
-  team: `${BASE_URL}/api/team-members`,
+  events: `${getBaseUrl()}/api/events`,
+  news: `${getBaseUrl()}/api/news`,
+  team: `${getBaseUrl()}/api/team-members`,
+};
+
+// For assets/images
+export const getAssetPath = (filename: string) => {
+  // Always use the /assets path since we're copying assets to dist/assets
+  return `/assets/${filename}`;
 }; 

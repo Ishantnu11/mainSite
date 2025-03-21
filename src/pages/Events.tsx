@@ -20,6 +20,7 @@ import {
 } from '@chakra-ui/react';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { API_ENDPOINTS } from '../config/api';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Event {
   _id: string;
@@ -125,10 +126,46 @@ const EventCard = ({ event }: { event: Event }) => {
   );
 };
 
+const MotionBox = motion(Box);
+
 const Events = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [tabIndex, setTabIndex] = useState(0);
+
+  const slideVariants = {
+    enter: (direction: number) => ({
+      x: direction > 0 ? 1000 : -1000,
+      opacity: 0
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      transition: {
+        x: { type: "spring", stiffness: 300, damping: 30 },
+        opacity: { duration: 0.2 }
+      }
+    },
+    exit: (direction: number) => ({
+      x: direction < 0 ? 1000 : -1000,
+      opacity: 0,
+      transition: {
+        x: { type: "spring", stiffness: 300, damping: 30 },
+        opacity: { duration: 0.2 }
+      }
+    })
+  };
+
+  const [[page, direction], setPage] = useState([0, 0]);
+
+  const paginate = (newDirection: number) => {
+    const newIndex = tabIndex + newDirection;
+    if (newIndex >= 0 && newIndex <= 2) {
+      setPage([page + newDirection, newDirection]);
+      setTabIndex(newIndex);
+    }
+  };
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -185,68 +222,224 @@ const Events = () => {
 
       <Container maxW="container.xl" position="relative" zIndex={1}>
         <VStack spacing={8} align="stretch">
-          <Heading
-            size="2xl"
-            textAlign="center"
-            bgGradient="linear(to-r, blue.400, purple.500)"
-            bgClip="text"
-            filter="drop-shadow(0 0 8px rgba(66, 153, 225, 0.3))"
-          >
-            Community Events
-          </Heading>
+          <Box textAlign="center" mb={8}>
+            <Heading
+              as={motion.h1}
+              size="2xl"
+              bgGradient="linear(to-r, blue.400, purple.500)"
+              bgClip="text"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              Community Events
+            </Heading>
+            <Text
+              fontSize="xl"
+              color="gray.400"
+              mt={4}
+              maxW="2xl"
+              mx="auto"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              Join us for exciting tech events, workshops, and meetups. Connect with fellow
+              developers and grow together.
+            </Text>
+          </Box>
 
-          <Text
-            textAlign="center"
-            color="gray.400"
-            fontSize="lg"
-            maxW="2xl"
-            mx="auto"
+          <Tabs 
+            variant="soft-rounded" 
+            colorScheme="blue" 
+            index={tabIndex}
+            onChange={(index) => {
+              const direction = index > tabIndex ? 1 : -1;
+              setPage([page + direction, direction]);
+              setTabIndex(index);
+            }}
+            isLazy
           >
-            Join us for exciting tech events, workshops, and meetups. Connect with fellow developers and grow together.
-          </Text>
-
-          <Tabs variant="soft-rounded" colorScheme="blue" align="center">
-            <TabList>
-              <Tab color="white" _selected={{ color: 'blue.800', bg: 'blue.100' }}>Upcoming</Tab>
-              <Tab color="white" _selected={{ color: 'green.800', bg: 'green.100' }}>Ongoing</Tab>
-              <Tab color="white" _selected={{ color: 'purple.800', bg: 'purple.100' }}>Past</Tab>
+            <TabList 
+              justifyContent="center" 
+              bg="whiteAlpha.100"
+              p={2}
+              borderRadius="full"
+              mx="auto"
+              maxW="fit-content"
+              display="flex"
+              gap={4}
+            >
+              <Tab
+                _selected={{
+                  bg: "blue.400",
+                  color: "white",
+                  transform: "scale(1.05)",
+                }}
+                transition="all 0.3s"
+                fontWeight="medium"
+              >
+                Upcoming
+              </Tab>
+              <Tab
+                _selected={{
+                  bg: "green.400",
+                  color: "white",
+                  transform: "scale(1.05)",
+                }}
+                transition="all 0.3s"
+                fontWeight="medium"
+              >
+                Ongoing
+              </Tab>
+              <Tab
+                _selected={{
+                  bg: "purple.400",
+                  color: "white",
+                  transform: "scale(1.05)",
+                }}
+                transition="all 0.3s"
+                fontWeight="medium"
+              >
+                Past
+              </Tab>
             </TabList>
 
-            <TabPanels mt={8}>
-              {['upcoming', 'ongoing', 'past'].map((status) => (
-                <TabPanel key={status}>
-                  {isLoading ? (
-                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-                      {[1, 2, 3].map((i) => (
-                        <Box
-                          key={i}
-                          borderRadius="xl"
-                          overflow="hidden"
-                          bg="rgba(26, 32, 44, 0.7)"
-                          p={6}
-                        >
-                          <VStack spacing={4} align="stretch">
-                            <Skeleton height="200px" />
-                            <Skeleton height="20px" width="40%" />
-                            <Skeleton height="24px" />
-                            <Skeleton height="60px" />
-                          </VStack>
-                        </Box>
-                      ))}
-                    </SimpleGrid>
-                  ) : error ? (
-                    <Text color="red.400" textAlign="center">
-                      {error}
-                    </Text>
-                  ) : (
-                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-                      {filterEvents(status as Event['status']).map((event) => (
-                        <EventCard key={event._id} event={event} />
-                      ))}
-                    </SimpleGrid>
-                  )}
-                </TabPanel>
-              ))}
+            <TabPanels>
+              <AnimatePresence mode="wait" custom={direction}>
+                {tabIndex === 0 && (
+                  <TabPanel key="upcoming" padding={0}>
+                    <MotionBox
+                      custom={direction}
+                      variants={slideVariants}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      px={4}
+                      py={8}
+                    >
+                      {isLoading ? (
+                        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+                          {[1, 2, 3].map((i) => (
+                            <Box
+                              key={i}
+                              borderRadius="xl"
+                              overflow="hidden"
+                              bg="rgba(26, 32, 44, 0.7)"
+                              p={6}
+                            >
+                              <VStack spacing={4} align="stretch">
+                                <Skeleton height="200px" />
+                                <Skeleton height="20px" width="40%" />
+                                <Skeleton height="24px" />
+                                <Skeleton height="60px" />
+                              </VStack>
+                            </Box>
+                          ))}
+                        </SimpleGrid>
+                      ) : error ? (
+                        <Text color="red.400" textAlign="center">
+                          {error}
+                        </Text>
+                      ) : (
+                        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+                          {filterEvents('upcoming').map((event) => (
+                            <EventCard key={event._id} event={event} />
+                          ))}
+                        </SimpleGrid>
+                      )}
+                    </MotionBox>
+                  </TabPanel>
+                )}
+                {tabIndex === 1 && (
+                  <TabPanel key="ongoing" padding={0}>
+                    <MotionBox
+                      custom={direction}
+                      variants={slideVariants}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      px={4}
+                      py={8}
+                    >
+                      {isLoading ? (
+                        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+                          {[1, 2, 3].map((i) => (
+                            <Box
+                              key={i}
+                              borderRadius="xl"
+                              overflow="hidden"
+                              bg="rgba(26, 32, 44, 0.7)"
+                              p={6}
+                            >
+                              <VStack spacing={4} align="stretch">
+                                <Skeleton height="200px" />
+                                <Skeleton height="20px" width="40%" />
+                                <Skeleton height="24px" />
+                                <Skeleton height="60px" />
+                              </VStack>
+                            </Box>
+                          ))}
+                        </SimpleGrid>
+                      ) : error ? (
+                        <Text color="red.400" textAlign="center">
+                          {error}
+                        </Text>
+                      ) : (
+                        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+                          {filterEvents('ongoing').map((event) => (
+                            <EventCard key={event._id} event={event} />
+                          ))}
+                        </SimpleGrid>
+                      )}
+                    </MotionBox>
+                  </TabPanel>
+                )}
+                {tabIndex === 2 && (
+                  <TabPanel key="past" padding={0}>
+                    <MotionBox
+                      custom={direction}
+                      variants={slideVariants}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      px={4}
+                      py={8}
+                    >
+                      {isLoading ? (
+                        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+                          {[1, 2, 3].map((i) => (
+                            <Box
+                              key={i}
+                              borderRadius="xl"
+                              overflow="hidden"
+                              bg="rgba(26, 32, 44, 0.7)"
+                              p={6}
+                            >
+                              <VStack spacing={4} align="stretch">
+                                <Skeleton height="200px" />
+                                <Skeleton height="20px" width="40%" />
+                                <Skeleton height="24px" />
+                                <Skeleton height="60px" />
+                              </VStack>
+                            </Box>
+                          ))}
+                        </SimpleGrid>
+                      ) : error ? (
+                        <Text color="red.400" textAlign="center">
+                          {error}
+                        </Text>
+                      ) : (
+                        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+                          {filterEvents('past').map((event) => (
+                            <EventCard key={event._id} event={event} />
+                          ))}
+                        </SimpleGrid>
+                      )}
+                    </MotionBox>
+                  </TabPanel>
+                )}
+              </AnimatePresence>
             </TabPanels>
           </Tabs>
         </VStack>

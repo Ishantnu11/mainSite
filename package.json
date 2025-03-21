@@ -4,14 +4,14 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev": "vite",
     "dev:frontend": "vite",
     "dev:backend": "nodemon server.js",
     "build": "tsc && vite build",
-    "vercel-build": "npm run build",
-    "start": "node server.js",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "vercel-build": "npm run build && cp -r src/assets dist/",
+    "start": "node server.js"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
@@ -34,7 +34,7 @@
     "@typescript-eslint/parser": "^6.14.0",
     "@vitejs/plugin-react": "^4.2.1",
     "concurrently": "^8.2.2",
-    "dotenv": "^16.3.1",
+    "dotenv": "^16.4.7",
     "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
