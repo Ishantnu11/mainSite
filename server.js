@@ -14,37 +14,18 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // Updated CORS configuration
-const allowedOrigins = [
-  'http://localhost:5173',  // Vite dev server
-  'http://localhost:5000',  // Local backend
-  'https://gdg-gug.vercel.app',  // Production URL
-  'https://gdg-gug-git-main-akhilraghav0s-projects.vercel.app', // Main branch preview
-  'https://gdg-gug.vercel.app', // Production domain
-];
-
-// Add dynamic Vercel preview URLs if in preview deployment
-if (process.env.VERCEL_URL) {
-  allowedOrigins.push(`https://${process.env.VERCEL_URL}`);
-}
-
 app.use(cors({
-  origin: process.env.NODE_ENV === 'development' 
-    ? true // Allow all origins in development
-    : function(origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-        
-        if (allowedOrigins.indexOf(origin) === -1) {
-          const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-          return callback(new Error(msg), false);
-        }
-        return callback(null, true);
-      },
+  origin: true, // Allow all origins in development
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 200
 }));
+
+// Add error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({ error: err.message });
+});
 
 app.use(express.json());
 
@@ -61,13 +42,41 @@ if (!MONGODB_URI) {
   process.exit(1);
 }
 
-// Connect to MongoDB with updated options
-mongoose.connect(MONGODB_URI)
-.then(() => console.log('Connected to MongoDB Atlas'))
-.catch(err => {
-  console.error('MongoDB connection error:', err);
-  process.exit(1);
+// Connect to MongoDB with better error handling
+mongoose.connection.on('connected', () => {
+  console.log('✅ MongoDB connected successfully');
 });
+
+mongoose.connection.on('error', (err) => {
+  console.error('❌ MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('⚠️ MongoDB disconnected');
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  try {
+    await mongoose.connection.close();
+    console.log('MongoDB connection closed through app termination');
+    process.exit(0);
+  } catch (err) {
+    console.error('Error during MongoDB shutdown:', err);
+    process.exit(1);
+  }
+});
+
+try {
+  await mongoose.connect(MONGODB_URI, {
+    dbName: 'gdg-gug', // Specify the database name explicitly
+    connectTimeoutMS: 10000, // 10 seconds
+    socketTimeoutMS: 45000, // 45 seconds
+  });
+} catch (err) {
+  console.error('Failed to connect to MongoDB:', err);
+  process.exit(1);
+}
 
 // Define schemas
 const eventSchema = new mongoose.Schema({
@@ -209,7 +218,6 @@ app.get('*', (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log('Allowed Origins:', allowedOrigins);
 });
 
 export default app;

@@ -167,6 +167,17 @@ const Events = () => {
     }
   };
 
+  const filterEvents = (status: Event['status']) => {
+    console.log('Filtering events for status:', status);
+    console.log('All events:', events);
+    
+    // Filter based on the status field from the database
+    const filtered = events.filter((event) => event.status === status);
+    
+    console.log('Filtered events:', filtered);
+    return filtered;
+  };
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -175,6 +186,9 @@ const Events = () => {
           throw new Error('Failed to fetch events');
         }
         const data = await response.json();
+        console.log('Fetched events:', data);
+        // Sort events by date
+        data.sort((a: Event, b: Event) => new Date(a.date).getTime() - new Date(b.date).getTime());
         setEvents(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -185,10 +199,6 @@ const Events = () => {
 
     fetchEvents();
   }, []);
-
-  const filterEvents = (status: Event['status']) => {
-    return events.filter((event) => event.status === status);
-  };
 
   return (
     <Box
@@ -230,11 +240,12 @@ const Events = () => {
               bgClip="text"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ type: "spring", duration: 0.5 }}
             >
               Community Events
             </Heading>
             <Text
+              as={motion.p}
               fontSize="xl"
               color="gray.400"
               mt={4}
@@ -242,7 +253,7 @@ const Events = () => {
               mx="auto"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
+              transition={{ type: "tween", delay: 0.2 }}
             >
               Join us for exciting tech events, workshops, and meetups. Connect with fellow
               developers and grow together.
@@ -306,140 +317,152 @@ const Events = () => {
             </TabList>
 
             <TabPanels>
-              <AnimatePresence mode="wait" custom={direction}>
-                {tabIndex === 0 && (
-                  <TabPanel key="upcoming" padding={0}>
-                    <MotionBox
-                      custom={direction}
-                      variants={slideVariants}
-                      initial="enter"
-                      animate="center"
-                      exit="exit"
-                      px={4}
-                      py={8}
-                    >
-                      {isLoading ? (
-                        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-                          {[1, 2, 3].map((i) => (
-                            <Box
-                              key={i}
-                              borderRadius="xl"
-                              overflow="hidden"
-                              bg="rgba(26, 32, 44, 0.7)"
-                              p={6}
-                            >
-                              <VStack spacing={4} align="stretch">
-                                <Skeleton height="200px" />
-                                <Skeleton height="20px" width="40%" />
-                                <Skeleton height="24px" />
-                                <Skeleton height="60px" />
-                              </VStack>
-                            </Box>
-                          ))}
-                        </SimpleGrid>
-                      ) : error ? (
-                        <Text color="red.400" textAlign="center">
-                          {error}
+              <TabPanel padding={0}>
+                <MotionBox
+                  key="upcoming"
+                  custom={direction}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  px={4}
+                  py={8}
+                >
+                  {isLoading ? (
+                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+                      {[1, 2, 3].map((i) => (
+                        <Box
+                          key={i}
+                          borderRadius="xl"
+                          overflow="hidden"
+                          bg="rgba(26, 32, 44, 0.7)"
+                          p={6}
+                        >
+                          <VStack spacing={4} align="stretch">
+                            <Skeleton height="200px" />
+                            <Skeleton height="20px" width="40%" />
+                            <Skeleton height="24px" />
+                            <Skeleton height="60px" />
+                          </VStack>
+                        </Box>
+                      ))}
+                    </SimpleGrid>
+                  ) : error ? (
+                    <Text color="red.400" textAlign="center">
+                      {error}
+                    </Text>
+                  ) : (
+                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+                      {filterEvents('upcoming').map((event) => (
+                        <EventCard key={event._id} event={event} />
+                      ))}
+                      {filterEvents('upcoming').length === 0 && (
+                        <Text color="gray.400" textAlign="center" gridColumn="1/-1">
+                          No upcoming events found.
                         </Text>
-                      ) : (
-                        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-                          {filterEvents('upcoming').map((event) => (
-                            <EventCard key={event._id} event={event} />
-                          ))}
-                        </SimpleGrid>
                       )}
-                    </MotionBox>
-                  </TabPanel>
-                )}
-                {tabIndex === 1 && (
-                  <TabPanel key="ongoing" padding={0}>
-                    <MotionBox
-                      custom={direction}
-                      variants={slideVariants}
-                      initial="enter"
-                      animate="center"
-                      exit="exit"
-                      px={4}
-                      py={8}
-                    >
-                      {isLoading ? (
-                        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-                          {[1, 2, 3].map((i) => (
-                            <Box
-                              key={i}
-                              borderRadius="xl"
-                              overflow="hidden"
-                              bg="rgba(26, 32, 44, 0.7)"
-                              p={6}
-                            >
-                              <VStack spacing={4} align="stretch">
-                                <Skeleton height="200px" />
-                                <Skeleton height="20px" width="40%" />
-                                <Skeleton height="24px" />
-                                <Skeleton height="60px" />
-                              </VStack>
-                            </Box>
-                          ))}
-                        </SimpleGrid>
-                      ) : error ? (
-                        <Text color="red.400" textAlign="center">
-                          {error}
+                    </SimpleGrid>
+                  )}
+                </MotionBox>
+              </TabPanel>
+
+              <TabPanel padding={0}>
+                <MotionBox
+                  key="ongoing"
+                  custom={direction}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  px={4}
+                  py={8}
+                >
+                  {isLoading ? (
+                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+                      {[1, 2, 3].map((i) => (
+                        <Box
+                          key={i}
+                          borderRadius="xl"
+                          overflow="hidden"
+                          bg="rgba(26, 32, 44, 0.7)"
+                          p={6}
+                        >
+                          <VStack spacing={4} align="stretch">
+                            <Skeleton height="200px" />
+                            <Skeleton height="20px" width="40%" />
+                            <Skeleton height="24px" />
+                            <Skeleton height="60px" />
+                          </VStack>
+                        </Box>
+                      ))}
+                    </SimpleGrid>
+                  ) : error ? (
+                    <Text color="red.400" textAlign="center">
+                      {error}
+                    </Text>
+                  ) : (
+                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+                      {filterEvents('ongoing').map((event) => (
+                        <EventCard key={event._id} event={event} />
+                      ))}
+                      {filterEvents('ongoing').length === 0 && (
+                        <Text color="gray.400" textAlign="center" gridColumn="1/-1">
+                          No ongoing events found.
                         </Text>
-                      ) : (
-                        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-                          {filterEvents('ongoing').map((event) => (
-                            <EventCard key={event._id} event={event} />
-                          ))}
-                        </SimpleGrid>
                       )}
-                    </MotionBox>
-                  </TabPanel>
-                )}
-                {tabIndex === 2 && (
-                  <TabPanel key="past" padding={0}>
-                    <MotionBox
-                      custom={direction}
-                      variants={slideVariants}
-                      initial="enter"
-                      animate="center"
-                      exit="exit"
-                      px={4}
-                      py={8}
-                    >
-                      {isLoading ? (
-                        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-                          {[1, 2, 3].map((i) => (
-                            <Box
-                              key={i}
-                              borderRadius="xl"
-                              overflow="hidden"
-                              bg="rgba(26, 32, 44, 0.7)"
-                              p={6}
-                            >
-                              <VStack spacing={4} align="stretch">
-                                <Skeleton height="200px" />
-                                <Skeleton height="20px" width="40%" />
-                                <Skeleton height="24px" />
-                                <Skeleton height="60px" />
-                              </VStack>
-                            </Box>
-                          ))}
-                        </SimpleGrid>
-                      ) : error ? (
-                        <Text color="red.400" textAlign="center">
-                          {error}
+                    </SimpleGrid>
+                  )}
+                </MotionBox>
+              </TabPanel>
+
+              <TabPanel padding={0}>
+                <MotionBox
+                  key="past"
+                  custom={direction}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  px={4}
+                  py={8}
+                >
+                  {isLoading ? (
+                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+                      {[1, 2, 3].map((i) => (
+                        <Box
+                          key={i}
+                          borderRadius="xl"
+                          overflow="hidden"
+                          bg="rgba(26, 32, 44, 0.7)"
+                          p={6}
+                        >
+                          <VStack spacing={4} align="stretch">
+                            <Skeleton height="200px" />
+                            <Skeleton height="20px" width="40%" />
+                            <Skeleton height="24px" />
+                            <Skeleton height="60px" />
+                          </VStack>
+                        </Box>
+                      ))}
+                    </SimpleGrid>
+                  ) : error ? (
+                    <Text color="red.400" textAlign="center">
+                      {error}
+                    </Text>
+                  ) : (
+                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+                      {filterEvents('past').map((event) => (
+                        <EventCard key={event._id} event={event} />
+                      ))}
+                      {filterEvents('past').length === 0 && (
+                        <Text color="gray.400" textAlign="center" gridColumn="1/-1">
+                          No past events found.
                         </Text>
-                      ) : (
-                        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-                          {filterEvents('past').map((event) => (
-                            <EventCard key={event._id} event={event} />
-                          ))}
-                        </SimpleGrid>
                       )}
-                    </MotionBox>
-                  </TabPanel>
-                )}
-              </AnimatePresence>
+                    </SimpleGrid>
+                  )}
+                </MotionBox>
+              </TabPanel>
             </TabPanels>
           </Tabs>
         </VStack>
