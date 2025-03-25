@@ -1,6 +1,6 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
-export interface IEvent extends Document {
+export interface IEvent {
   title: string;
   date: Date;
   description: string;
@@ -9,7 +9,7 @@ export interface IEvent extends Document {
   status: 'upcoming' | 'ongoing' | 'past';
 }
 
-const eventSchema = new Schema<IEvent>({
+const eventSchema = new mongoose.Schema<IEvent>({
   title: { type: String, required: true },
   date: { type: Date, required: true },
   description: { type: String, required: true },
@@ -18,14 +18,9 @@ const eventSchema = new Schema<IEvent>({
   status: {
     type: String,
     enum: ['upcoming', 'ongoing', 'past'],
-    default: 'upcoming',
-    required: true
+    default: 'upcoming'
   }
-}, {
-  timestamps: true
 });
 
-// Check if model exists before creating a new one
-const Event = mongoose.models.Event || mongoose.model<IEvent>('Event', eventSchema);
-
+export const Event = mongoose.models.Event || mongoose.model<IEvent>('Event', eventSchema);
 export default Event; 

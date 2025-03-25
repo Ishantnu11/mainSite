@@ -1,55 +1,45 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import { Request, Response } from 'express';
+import { Event } from '../../models/Event';
 import dbConnect from '../../lib/mongodb';
-import Event, { IEvent } from '../../models/Event';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Handle CORS preflight requests
+export default async function handler(req: Request, res: Response) {
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).end();
   }
 
-  console.log(`[API] ${req.method} /api/events - Starting request`);
-  
   try {
-    console.log('[API] Connecting to MongoDB...');
     await dbConnect();
-    console.log('[API] Connected to MongoDB successfully');
+    console.log(`📨 ${req.method} /api/events - Processing request`);
 
     switch (req.method) {
       case 'GET':
-        console.log('[API] Fetching events...');
-        const events = await Event.find({}).sort({ date: 1 }).lean().exec();
-        console.log(`[API] Found ${events.length} events`);
-        res.status(200).json(events);
-        break;
+        const events = await Event.find().sort({ date: 1 });
+        console.log(`✅ Successfully fetched ${events.length} events`);
+        return res.json(events);
 
       case 'POST':
-        console.log('[API] Creating new event...');
-        const eventData = req.body as Partial<IEvent>;
         const newEvent = new Event({
-          title: eventData.title,
-          date: new Date(eventData.date!),
-          description: eventData.description,
-          image: eventData.image,
-          link: eventData.link,
-          status: eventData.status || 'upcoming'
+          ...req.body,
+          date: new Date(req.body.date)
         });
         await newEvent.save();
-        console.log('[API] Event created successfully');
-        res.status(201).json(newEvent);
-        break;
+        console.log(`✅ Successfully created new event: ${newEvent.title}`);
+        return res.json(newEvent);
+
+      case 'DELETE':
+        const { id } = req.params;
+        await Event.findByIdAndDelete(id);
+        console.log(`✅ Successfully deleted event with ID: ${id}`);
+        return res.json({ message: 'Event deleted successfully' });
 
       default:
-        res.setHeader('Allow', ['GET', 'POST', 'OPTIONS']);
-        res.status(405).end(`Method ${req.method} Not Allowed`);
+        return res.status(405).json({ error: 'Method not allowed' });
     }
   } catch (error) {
-    console.error('[API] Error in events API:', error);
-    // More detailed error response
-    res.status(500).json({
+    console.error('❌ Error in events API:', error);
+    return res.status(500).json({ 
       error: 'Failed to process request',
-      message: error instanceof Error ? error.message : 'Unknown error',
+      details: error instanceof Error ? error.message : 'Unknown error',
       timestamp: new Date().toISOString()
     });
   }

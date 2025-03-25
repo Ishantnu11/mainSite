@@ -1,64 +1,59 @@
 import mongoose from 'mongoose';
 
-declare global {
-  var mongoose: { conn: null | typeof mongoose; promise: null | Promise<typeof mongoose> };
-}
-
-const MONGODB_URI = process.env.MONGODB_URI!;
+const MONGODB_URI = process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
-  console.error('❌ No MongoDB URI found in environment variables');
-  throw new Error('Please add your MONGODB_URI to .env.local');
+  throw new Error('Please define the MONGODB_URI environment variable inside .env');
 }
 
-let cached = global.mongoose;
+interface GlobalWithMongoose {
+  mongoose: {
+    conn: typeof mongoose | null;
+    promise: Promise<typeof mongoose> | null;
+  };
+}
 
-if (!cached) {
-  console.log('🔄 Initializing MongoDB connection cache');
-  cached = global.mongoose = { conn: null, promise: null };
+declare const global: GlobalWithMongoose;
+
+// Initialize global mongoose state
+if (!global.mongoose) {
+  global.mongoose = {
+    conn: null,
+    promise: null,
+  };
 }
 
 async function dbConnect() {
-  console.log('🔄 Starting MongoDB connection process...');
-  
-  if (cached.conn) {
-    console.log('✅ Using cached MongoDB connection');
-    return cached.conn;
+  if (global.mongoose.conn) {
+    console.log('🔄 Using existing MongoDB connection');
+    return global.mongoose.conn;
   }
 
-  if (!cached.promise) {
-    const opts: mongoose.ConnectOptions = {
-      bufferCommands: false,
+  if (!global.mongoose.promise) {
+    console.log('🔌 Creating new MongoDB connection...');
+    
+    const opts = {
+      bufferCommands: true,
     };
 
-    console.log('🔄 Creating new MongoDB connection...');
-    console.log(`📍 Environment: ${process.env.NODE_ENV}`);
-    console.log(`🔗 Connecting to: ${MONGODB_URI.split('@')[1]}`); // Log only the host part, not credentials
-
-    cached.promise = mongoose.connect(MONGODB_URI, opts)
+    global.mongoose.promise = mongoose.connect(MONGODB_URI, opts)
       .then((mongoose) => {
         console.log('✅ MongoDB connected successfully');
-        console.log(`📊 Database: ${mongoose.connection.name}`);
-        console.log(`🔌 Host: ${mongoose.connection.host}`);
         return mongoose;
       })
       .catch((error) => {
         console.error('❌ MongoDB connection error:', error);
         throw error;
       });
-  } else {
-    console.log('⏳ Using existing connection promise');
   }
 
   try {
-    cached.conn = await cached.promise;
-  } catch (e) {
-    console.error('❌ Failed to resolve MongoDB connection:', e);
-    cached.promise = null;
-    throw e;
+    global.mongoose.conn = await global.mongoose.promise;
+    return global.mongoose.conn;
+  } catch (error) {
+    global.mongoose.promise = null;
+    throw error;
   }
-
-  return cached.conn;
 }
 
 // Listen for connection events

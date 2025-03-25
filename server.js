@@ -5,6 +5,11 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
+// Import route handlers
+import eventsHandler from './api/events/index.js';
+import newsHandler from './api/news/index.js';
+import teamHandler from './api/team/index.js';
+
 // Load environment variables from .env file
 dotenv.config();
 
@@ -133,102 +138,10 @@ const Event = mongoose.model('Event', eventSchema);
 const News = mongoose.model('News', newsSchema);
 const TeamMember = mongoose.model('TeamMember', teamMemberSchema);
 
-// API Routes with enhanced logging
-app.get('/api/events', async (req, res) => {
-  console.log('📥 GET /api/events - Fetching events...');
-  try {
-    const events = await Event.find().sort({ date: 1 });
-    console.log(`✅ Successfully fetched ${events.length} events`);
-    res.json(events);
-  } catch (error) {
-    console.error('❌ Error fetching events:', error);
-    res.status(500).json({ error: 'Failed to fetch events' });
-  }
-});
-
-app.post('/api/events', async (req, res) => {
-  try {
-    const { title, date, description, image, link, status } = req.body;
-    const newEvent = new Event({
-      title,
-      date: new Date(date),
-      description,
-      image,
-      link,
-      status: status || 'upcoming'
-    });
-    await newEvent.save();
-    res.json(newEvent);
-  } catch (error) {
-    console.error('Error creating event:', error);
-    res.status(500).json({ error: 'Failed to create event' });
-  }
-});
-
-app.delete('/api/events/:id', async (req, res) => {
-  try {
-    await Event.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Event deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete event' });
-  }
-});
-
-app.get('/api/news', async (req, res) => {
-  try {
-    const news = await News.find();
-    res.json(news);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch news' });
-  }
-});
-
-app.post('/api/news', async (req, res) => {
-  try {
-    const newNews = new News(req.body);
-    await newNews.save();
-    res.json(newNews);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create news' });
-  }
-});
-
-app.delete('/api/news/:id', async (req, res) => {
-  try {
-    await News.findByIdAndDelete(req.params.id);
-    res.json({ message: 'News deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete news' });
-  }
-});
-
-app.get('/api/team-members', async (req, res) => {
-  try {
-    const teamMembers = await TeamMember.find();
-    res.json(teamMembers);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch team members' });
-  }
-});
-
-app.post('/api/team-members', async (req, res) => {
-  try {
-    const newTeamMember = new TeamMember(req.body);
-    await newTeamMember.save();
-    res.json(newTeamMember);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create team member' });
-  }
-});
-
-app.delete('/api/team-members/:id', async (req, res) => {
-  try {
-    await TeamMember.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Team member deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete team member' });
-  }
-});
+// API Routes
+app.use('/api/events', eventsHandler);
+app.use('/api/news', newsHandler);
+app.use('/api/team', teamHandler);
 
 // Handle React routing, return all requests to React app
 app.get('*', (req, res) => {
@@ -242,7 +155,7 @@ app.listen(PORT, () => {
 📱 API endpoints available at:
    - /api/events
    - /api/news
-   - /api/team-members
+   - /api/team
   `);
 });
 

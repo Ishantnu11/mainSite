@@ -1,26 +1,26 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
-export interface INews extends Document {
+export interface INews {
   title: string;
-  date: Date;
   description: string;
-  type: string;
+  type: 'news' | 'internship';
   company?: string;
   location?: string;
+  date: Date;
 }
 
-const newsSchema = new Schema<INews>({
+const newsSchema = new mongoose.Schema<INews>({
   title: { type: String, required: true },
-  date: { type: Date, required: true },
   description: { type: String, required: true },
-  type: { type: String, required: true },
+  type: {
+    type: String,
+    enum: ['news', 'internship'],
+    required: true
+  },
   company: { type: String },
-  location: { type: String }
-}, {
-  timestamps: true
+  location: { type: String },
+  date: { type: Date, required: true }
 });
 
-// Check if model exists before creating a new one
-const News = mongoose.models.News || mongoose.model<INews>('News', newsSchema);
-
+export const News = mongoose.models.News || mongoose.model<INews>('News', newsSchema);
 export default News; 

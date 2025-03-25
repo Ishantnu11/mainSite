@@ -1,37 +1,46 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import { Request, Response } from 'express';
+import { News } from '../../models/News';
 import dbConnect from '../../lib/mongodb';
-import News from '../../models/News';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  await dbConnect();
+export default async function handler(req: Request, res: Response) {
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
   try {
+    await dbConnect();
+    console.log(`📨 ${req.method} /api/news - Processing request`);
+
     switch (req.method) {
       case 'GET':
         const news = await News.find().sort({ date: -1 });
-        res.status(200).json(news);
-        break;
+        console.log(`✅ Successfully fetched ${news.length} news items`);
+        return res.json(news);
 
       case 'POST':
-        const { title, description, type, company, location, date } = req.body;
         const newNews = new News({
-          title,
-          description,
-          type,
-          company,
-          location,
-          date: new Date(date)
+          ...req.body,
+          date: new Date(req.body.date)
         });
         await newNews.save();
-        res.status(201).json(newNews);
-        break;
+        console.log(`✅ Successfully created new news item: ${newNews.title}`);
+        return res.json(newNews);
+
+      case 'DELETE':
+        const { id } = req.params;
+        await News.findByIdAndDelete(id);
+        console.log(`✅ Successfully deleted news item with ID: ${id}`);
+        return res.json({ message: 'News item deleted successfully' });
 
       default:
-        res.setHeader('Allow', ['GET', 'POST']);
-        res.status(405).end(`Method ${req.method} Not Allowed`);
+        return res.status(405).json({ error: 'Method not allowed' });
     }
   } catch (error) {
-    console.error('Error in news API:', error);
-    res.status(500).json({ error: 'Failed to process request' });
+    console.error('❌ Error in news API:', error);
+    return res.status(500).json({ 
+      error: 'Failed to process request',
+      details: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    });
   }
 } 
