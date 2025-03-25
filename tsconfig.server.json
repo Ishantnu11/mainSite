@@ -4,13 +4,30 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "outDir": "dist-server",
-    "rootDir": ".",
     "strict": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
+    "outDir": "dist-server",
+    "rootDir": ".",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "types": ["node"],
+    "lib": ["ES2020"],
+    "baseUrl": ".",
+    "paths": {
+      "*": ["node_modules/*"]
+    }
   },
-  "include": ["api/**/*", "lib/**/*", "models/**/*", "server.js"],
-  "exclude": ["node_modules", "src"]
+  "include": [
+    "server.js",
+    "api/**/*.ts",
+    "lib/**/*.ts",
+    "models/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "dist-server",
+    "src"
+  ]
 } 

@@ -6,9 +6,9 @@ import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
 // Import route handlers
-import eventsHandler from './api/events/index.js';
-import newsHandler from './api/news/index.js';
-import teamHandler from './api/team/index.js';
+import eventsRouter from './api/events/index.js';
+import newsRouter from './api/news/index.js';
+import teamRouter from './api/team/index.js';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -89,8 +89,6 @@ try {
   console.log('🔄 Initializing MongoDB connection...');
   await mongoose.connect(MONGODB_URI, {
     dbName: 'gdg-gug',
-    connectTimeoutMS: 10000,
-    socketTimeoutMS: 45000,
   });
 } catch (err) {
   console.error('❌ Failed to connect to MongoDB:', err);
@@ -101,47 +99,10 @@ try {
   process.exit(1);
 }
 
-// Define schemas
-const eventSchema = new mongoose.Schema({
-  title: String,
-  date: Date,
-  description: String,
-  image: String,
-  link: String,
-  status: {
-    type: String,
-    enum: ['upcoming', 'ongoing', 'past'],
-    default: 'upcoming'
-  }
-});
-
-const newsSchema = new mongoose.Schema({
-  title: String,
-  description: String,
-  type: String,
-  company: String,
-  location: String,
-  date: Date,
-});
-
-const teamMemberSchema = new mongoose.Schema({
-  name: String,
-  role: String,
-  image: String,
-  linkedin: String,
-  twitter: String,
-  github: String,
-});
-
-// Create models
-const Event = mongoose.model('Event', eventSchema);
-const News = mongoose.model('News', newsSchema);
-const TeamMember = mongoose.model('TeamMember', teamMemberSchema);
-
 // API Routes
-app.use('/api/events', eventsHandler);
-app.use('/api/news', newsHandler);
-app.use('/api/team', teamHandler);
+app.use('/api/events', eventsRouter);
+app.use('/api/news', newsRouter);
+app.use('/api/team', teamRouter);
 
 // Handle React routing, return all requests to React app
 app.get('*', (req, res) => {

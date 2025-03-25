@@ -1,19 +1,17 @@
-import mongoose from 'mongoose';
+import mongoose, { ConnectOptions } from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI;
+declare global {
+  var mongoose: {
+    conn: typeof mongoose | null;
+    promise: Promise<typeof mongoose> | null;
+  } | undefined;
+}
+
+const MONGODB_URI = process.env.MONGODB_URI!;
 
 if (!MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env');
 }
-
-interface GlobalWithMongoose {
-  mongoose: {
-    conn: typeof mongoose | null;
-    promise: Promise<typeof mongoose> | null;
-  };
-}
-
-declare const global: GlobalWithMongoose;
 
 // Initialize global mongoose state
 if (!global.mongoose) {
@@ -24,15 +22,15 @@ if (!global.mongoose) {
 }
 
 async function dbConnect() {
-  if (global.mongoose.conn) {
+  if (global.mongoose?.conn) {
     console.log('🔄 Using existing MongoDB connection');
     return global.mongoose.conn;
   }
 
-  if (!global.mongoose.promise) {
+  if (!global.mongoose?.promise) {
     console.log('🔌 Creating new MongoDB connection...');
     
-    const opts = {
+    const opts: ConnectOptions = {
       bufferCommands: true,
     };
 
@@ -48,8 +46,9 @@ async function dbConnect() {
   }
 
   try {
-    global.mongoose.conn = await global.mongoose.promise;
-    return global.mongoose.conn;
+    const mongoose = await global.mongoose.promise;
+    global.mongoose.conn = mongoose;
+    return mongoose;
   } catch (error) {
     global.mongoose.promise = null;
     throw error;

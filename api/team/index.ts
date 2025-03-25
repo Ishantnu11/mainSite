@@ -1,37 +1,18 @@
-import { Request, Response } from 'express';
+import express, { Request, Response, Router } from 'express';
 import { TeamMember } from '../../models/TeamMember';
 import dbConnect from '../../lib/mongodb';
 
-export default async function handler(req: Request, res: Response) {
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+const router = Router();
 
+// GET /api/team
+router.get('/', async (req: Request, res: Response) => {
   try {
     await dbConnect();
-    console.log(`📨 ${req.method} /api/team - Processing request`);
+    console.log('📨 GET /api/team - Processing request');
 
-    switch (req.method) {
-      case 'GET':
-        const members = await TeamMember.find().sort({ role: 1 });
-        console.log(`✅ Successfully fetched ${members.length} team members`);
-        return res.json(members);
-
-      case 'POST':
-        const newMember = new TeamMember(req.body);
-        await newMember.save();
-        console.log(`✅ Successfully created new team member: ${newMember.name}`);
-        return res.json(newMember);
-
-      case 'DELETE':
-        const { id } = req.params;
-        await TeamMember.findByIdAndDelete(id);
-        console.log(`✅ Successfully deleted team member with ID: ${id}`);
-        return res.json({ message: 'Team member deleted successfully' });
-
-      default:
-        return res.status(405).json({ error: 'Method not allowed' });
-    }
+    const members = await TeamMember.find().sort({ role: 1 });
+    console.log(`✅ Successfully fetched ${members.length} team members`);
+    return res.json(members);
   } catch (error) {
     console.error('❌ Error in team API:', error);
     return res.status(500).json({ 
@@ -40,4 +21,45 @@ export default async function handler(req: Request, res: Response) {
       timestamp: new Date().toISOString()
     });
   }
-} 
+});
+
+// POST /api/team
+router.post('/', async (req: Request, res: Response) => {
+  try {
+    await dbConnect();
+    console.log('📨 POST /api/team - Processing request');
+
+    const newMember = new TeamMember(req.body);
+    await newMember.save();
+    console.log(`✅ Successfully created new team member: ${newMember.name}`);
+    return res.json(newMember);
+  } catch (error) {
+    console.error('❌ Error in team API:', error);
+    return res.status(500).json({ 
+      error: 'Failed to process request',
+      details: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// DELETE /api/team/:id
+router.delete('/:id', async (req: Request, res: Response) => {
+  try {
+    await dbConnect();
+    console.log(`📨 DELETE /api/team/${req.params.id} - Processing request`);
+
+    await TeamMember.findByIdAndDelete(req.params.id);
+    console.log(`✅ Successfully deleted team member with ID: ${req.params.id}`);
+    return res.json({ message: 'Team member deleted successfully' });
+  } catch (error) {
+    console.error('❌ Error in team API:', error);
+    return res.status(500).json({ 
+      error: 'Failed to process request',
+      details: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+export default router; 
