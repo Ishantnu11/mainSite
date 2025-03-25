@@ -1,16 +1,17 @@
 {
   "name": "gdg-gug",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"node server.js\" \"vite\"",
     "dev:frontend": "vite",
     "dev:backend": "nodemon server.js",
     "build": "tsc && vite build",
+    "build:server": "tsc -p tsconfig.server.json",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "vercel-build": "npm run build && cp -r src/assets dist/",
+    "vercel-build": "npm run build:server && npm run build && cp -r src/assets dist/",
     "server": "node server.js"
   },
   "dependencies": {

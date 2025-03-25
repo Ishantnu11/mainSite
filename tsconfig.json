@@ -30,11 +30,7 @@
       "@/models/*": ["models/*"]
     }
   },
-  "include": [
-    "src",
-    "api",
-    "lib",
-    "models"
-  ],
+  "include": ["src"],
+  "exclude": ["api", "lib", "models"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
