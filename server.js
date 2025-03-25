@@ -13,9 +13,15 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Enhanced logging middleware
+app.use((req, res, next) => {
+  console.log(`📨 ${req.method} ${req.url}`);
+  next();
+});
+
 // Updated CORS configuration
 app.use(cors({
-  origin: true, // Allow all origins in development
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -23,7 +29,7 @@ app.use(cors({
 
 // Add error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
+  console.error('❌ Error:', err);
   res.status(500).json({ error: err.message });
 });
 
@@ -38,43 +44,55 @@ app.use('/assets', express.static(path.join(__dirname, 'src/assets')));
 // Use environment variable for MongoDB connection
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) {
-  console.error('MONGODB_URI environment variable is not set');
+  console.error('❌ MONGODB_URI environment variable is not set');
   process.exit(1);
 }
 
-// Connect to MongoDB with better error handling
+// Log the MongoDB connection string (without credentials)
+const sanitizedUri = MONGODB_URI.replace(
+  /mongodb(\+srv)?:\/\/[^:]+:[^@]+@/,
+  'mongodb$1://****:****@'
+);
+console.log('🔌 Attempting to connect to MongoDB:', sanitizedUri);
+
+// Enhanced MongoDB connection handling
 mongoose.connection.on('connected', () => {
   console.log('✅ MongoDB connected successfully');
+  console.log(`📊 Connected to database: ${mongoose.connection.name}`);
+  console.log(`🖥️ Database host: ${mongoose.connection.host}`);
 });
 
 mongoose.connection.on('error', (err) => {
   console.error('❌ MongoDB connection error:', err);
+  console.log('💡 Tips:');
+  console.log('  1. Check if your MongoDB URI is correct');
+  console.log('  2. Ensure MongoDB is running');
+  console.log('  3. Check if IP whitelist includes your current IP');
+  console.log('  4. Verify database user credentials');
 });
 
 mongoose.connection.on('disconnected', () => {
   console.log('⚠️ MongoDB disconnected');
 });
 
-// Graceful shutdown
-process.on('SIGINT', async () => {
-  try {
-    await mongoose.connection.close();
-    console.log('MongoDB connection closed through app termination');
-    process.exit(0);
-  } catch (err) {
-    console.error('Error during MongoDB shutdown:', err);
-    process.exit(1);
-  }
+mongoose.connection.on('reconnected', () => {
+  console.log('🔄 MongoDB reconnected');
 });
 
+// Connect to MongoDB with enhanced error handling
 try {
+  console.log('🔄 Initializing MongoDB connection...');
   await mongoose.connect(MONGODB_URI, {
-    dbName: 'gdg-gug', // Specify the database name explicitly
-    connectTimeoutMS: 10000, // 10 seconds
-    socketTimeoutMS: 45000, // 45 seconds
+    dbName: 'gdg-gug',
+    connectTimeoutMS: 10000,
+    socketTimeoutMS: 45000,
   });
 } catch (err) {
-  console.error('Failed to connect to MongoDB:', err);
+  console.error('❌ Failed to connect to MongoDB:', err);
+  console.log('💡 Debug information:');
+  console.log('  - Error name:', err.name);
+  console.log('  - Error code:', err.code);
+  console.log('  - Error message:', err.message);
   process.exit(1);
 }
 
@@ -115,13 +133,15 @@ const Event = mongoose.model('Event', eventSchema);
 const News = mongoose.model('News', newsSchema);
 const TeamMember = mongoose.model('TeamMember', teamMemberSchema);
 
-// API Routes
+// API Routes with enhanced logging
 app.get('/api/events', async (req, res) => {
+  console.log('📥 GET /api/events - Fetching events...');
   try {
     const events = await Event.find().sort({ date: 1 });
+    console.log(`✅ Successfully fetched ${events.length} events`);
     res.json(events);
   } catch (error) {
-    console.error('Error fetching events:', error);
+    console.error('❌ Error fetching events:', error);
     res.status(500).json({ error: 'Failed to fetch events' });
   }
 });
@@ -217,7 +237,13 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`
+🚀 Server is running on port ${PORT}
+📱 API endpoints available at:
+   - /api/events
+   - /api/news
+   - /api/team-members
+  `);
 });
 
 export default app;

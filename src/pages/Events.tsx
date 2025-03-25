@@ -5,22 +5,18 @@ import {
   Heading,
   Text,
   SimpleGrid,
-  Button,
-  Image,
   VStack,
   Tabs,
   TabList,
   TabPanels,
   Tab,
   TabPanel,
-  Badge,
-  Link,
-  useColorModeValue,
   Skeleton,
+  useToast,
 } from '@chakra-ui/react';
-import { ExternalLinkIcon } from '@chakra-ui/icons';
-import { API_ENDPOINTS } from '../config/api';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { API_ENDPOINTS, FALLBACK_API_ENDPOINTS, fetchWithFallback } from '../config/api';
+import EventCard from '../components/EventCard';
 
 interface Event {
   _id: string;
@@ -32,100 +28,6 @@ interface Event {
   status: 'upcoming' | 'ongoing' | 'past';
 }
 
-const EventCard = ({ event }: { event: Event }) => {
-  const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-
-  return (
-    <Box
-      position="relative"
-      borderRadius="xl"
-      overflow="hidden"
-      bg="rgba(26, 32, 44, 0.7)"
-      backdropFilter="blur(12px)"
-      borderWidth="1px"
-      borderColor="gray.700"
-      transition="all 0.3s"
-      _hover={{
-        transform: 'translateY(-4px)',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
-        borderColor: 'blue.400',
-      }}
-    >
-      <Box position="relative" height="200px" overflow="hidden">
-        <Image
-          src={event.image}
-          alt={event.title}
-          objectFit="cover"
-          w="100%"
-          h="100%"
-          transition="transform 0.3s"
-          _groupHover={{ transform: 'scale(1.05)' }}
-        />
-        <Box
-          position="absolute"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          bg="linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 100%)"
-        />
-      </Box>
-
-      <VStack spacing={4} p={6} align="start">
-        <Badge
-          colorScheme={
-            event.status === 'upcoming'
-              ? 'blue'
-              : event.status === 'ongoing'
-              ? 'green'
-              : 'purple'
-          }
-          fontSize="sm"
-          px={2}
-          py={1}
-          borderRadius="full"
-        >
-          {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-        </Badge>
-
-        <Heading size="md" color="white">
-          {event.title}
-        </Heading>
-
-        <Text color="gray.400" noOfLines={3}>
-          {event.description}
-        </Text>
-
-        <Text fontSize="sm" color="gray.500">
-          {formattedDate}
-        </Text>
-
-        {event.link && (
-          <Button
-            as={Link}
-            href={event.link}
-            isExternal
-            rightIcon={<ExternalLinkIcon />}
-            size="sm"
-            colorScheme="blue"
-            variant="solid"
-            _hover={{
-              transform: 'translateY(-2px)',
-              boxShadow: 'lg',
-            }}
-          >
-            Learn More
-          </Button>
-        )}
-      </VStack>
-    </Box>
-  );
-};
-
 const MotionBox = motion(Box);
 
 const Events = () => {
@@ -133,6 +35,46 @@ const Events = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tabIndex, setTabIndex] = useState(0);
+  const [page, setPage] = useState([0, 0]);
+  const [direction, setDirection] = useState(0);
+  const toast = useToast();
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      console.log('🔄 Starting to fetch events...');
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const data = await fetchWithFallback(
+          API_ENDPOINTS.events,
+          FALLBACK_API_ENDPOINTS.events
+        );
+        
+        console.log(`✅ Successfully fetched ${data.length} events`);
+        setEvents(data);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch events';
+        console.error('❌ Error fetching events:', errorMessage);
+        setError(errorMessage);
+        toast({
+          title: 'Error fetching events',
+          description: errorMessage,
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [toast]);
+
+  const filterEvents = (status: Event['status']) => {
+    return events.filter(event => event.status === status);
+  };
 
   const slideVariants = {
     enter: (direction: number) => ({
@@ -140,65 +82,16 @@ const Events = () => {
       opacity: 0
     }),
     center: {
+      zIndex: 1,
       x: 0,
-      opacity: 1,
-      transition: {
-        x: { type: "spring", stiffness: 300, damping: 30 },
-        opacity: { duration: 0.2 }
-      }
+      opacity: 1
     },
     exit: (direction: number) => ({
+      zIndex: 0,
       x: direction < 0 ? 1000 : -1000,
-      opacity: 0,
-      transition: {
-        x: { type: "spring", stiffness: 300, damping: 30 },
-        opacity: { duration: 0.2 }
-      }
+      opacity: 0
     })
   };
-
-  const [[page, direction], setPage] = useState([0, 0]);
-
-  const paginate = (newDirection: number) => {
-    const newIndex = tabIndex + newDirection;
-    if (newIndex >= 0 && newIndex <= 2) {
-      setPage([page + newDirection, newDirection]);
-      setTabIndex(newIndex);
-    }
-  };
-
-  const filterEvents = (status: Event['status']) => {
-    console.log('Filtering events for status:', status);
-    console.log('All events:', events);
-    
-    // Filter based on the status field from the database
-    const filtered = events.filter((event) => event.status === status);
-    
-    console.log('Filtered events:', filtered);
-    return filtered;
-  };
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch(API_ENDPOINTS.events);
-        if (!response.ok) {
-          throw new Error('Failed to fetch events');
-        }
-        const data = await response.json();
-        console.log('Fetched events:', data);
-        // Sort events by date
-        data.sort((a: Event, b: Event) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        setEvents(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchEvents();
-  }, []);
 
   return (
     <Box

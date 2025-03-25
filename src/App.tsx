@@ -8,6 +8,7 @@ import Team from './pages/Team'
 import News from './pages/News'
 import Login from './pages/Login'
 import Admin from './pages/Admin'
+import TPO from './pages/TPO'
 
 function App() {
   return (
@@ -76,6 +77,7 @@ function App() {
                 <Route path="/news" element={<News />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/admin" element={<Admin />} />
+                <Route path="/tpo" element={<TPO />} />
               </Routes>
             </Box>
           </Box>

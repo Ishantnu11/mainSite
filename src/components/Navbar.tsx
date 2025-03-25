@@ -27,6 +27,7 @@ const Navbar = () => {
     { name: 'Events', path: '/events' },
     { name: 'News', path: '/news' },
     { name: 'Team', path: '/team' },
+    { name: 'TPO', path: '/tpo' },
   ]
 
   if (isAdmin) {
