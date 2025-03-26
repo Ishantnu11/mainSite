@@ -1,64 +1,64 @@
-import express, { Request, Response, Router } from 'express';
-import { TeamMember } from '../../models/TeamMember';
-import dbConnect from '../../lib/mongodb';
+import { Router } from 'express';
+import mongoose from 'mongoose';
 
 const router = Router();
 
-// GET /api/team
-router.get('/', async (req: Request, res: Response) => {
-  try {
-    await dbConnect();
-    console.log('📨 GET /api/team - Processing request');
+// Define Team Member Schema
+const teamMemberSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  role: { type: String, required: true },
+  image: { type: String, required: true },
+  linkedin: String,
+  twitter: String,
+  github: String
+}, {
+  timestamps: true
+});
 
-    const members = await TeamMember.find().sort({ role: 1 });
+// Create Team Member Model (only if it doesn't exist)
+const TeamMember = mongoose.models.TeamMember || mongoose.model('TeamMember', teamMemberSchema);
+
+// GET all team members
+router.get('/', async (req, res) => {
+  try {
+    console.log('📥 Fetching all team members...');
+    const members = await TeamMember.find().sort({ role: 1, name: 1 });
     console.log(`✅ Successfully fetched ${members.length} team members`);
-    return res.json(members);
+    res.json(members);
   } catch (error) {
-    console.error('❌ Error in team API:', error);
-    return res.status(500).json({ 
-      error: 'Failed to process request',
-      details: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
-    });
+    console.error('❌ Error fetching team members:', error);
+    res.status(500).json({ error: 'Failed to fetch team members' });
   }
 });
 
-// POST /api/team
-router.post('/', async (req: Request, res: Response) => {
+// POST new team member
+router.post('/', async (req, res) => {
   try {
-    await dbConnect();
-    console.log('📨 POST /api/team - Processing request');
-
-    const newMember = new TeamMember(req.body);
-    await newMember.save();
-    console.log(`✅ Successfully created new team member: ${newMember.name}`);
-    return res.json(newMember);
+    console.log('📝 Creating new team member:', req.body);
+    const member = new TeamMember(req.body);
+    await member.save();
+    console.log('✅ Team member created successfully:', member._id);
+    res.status(201).json(member);
   } catch (error) {
-    console.error('❌ Error in team API:', error);
-    return res.status(500).json({ 
-      error: 'Failed to process request',
-      details: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
-    });
+    console.error('❌ Error creating team member:', error);
+    res.status(400).json({ error: 'Failed to create team member' });
   }
 });
 
-// DELETE /api/team/:id
-router.delete('/:id', async (req: Request, res: Response) => {
+// DELETE team member
+router.delete('/:id', async (req, res) => {
   try {
-    await dbConnect();
-    console.log(`📨 DELETE /api/team/${req.params.id} - Processing request`);
-
-    await TeamMember.findByIdAndDelete(req.params.id);
-    console.log(`✅ Successfully deleted team member with ID: ${req.params.id}`);
-    return res.json({ message: 'Team member deleted successfully' });
+    console.log('🗑️ Deleting team member:', req.params.id);
+    const member = await TeamMember.findByIdAndDelete(req.params.id);
+    if (!member) {
+      console.log('❌ Team member not found');
+      return res.status(404).json({ error: 'Team member not found' });
+    }
+    console.log('✅ Team member deleted successfully');
+    res.json({ message: 'Team member deleted successfully' });
   } catch (error) {
-    console.error('❌ Error in team API:', error);
-    return res.status(500).json({ 
-      error: 'Failed to process request',
-      details: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
-    });
+    console.error('❌ Error deleting team member:', error);
+    res.status(500).json({ error: 'Failed to delete team member' });
   }
 });
 

@@ -1,66 +1,75 @@
+import { API_BASE_URL, FALLBACK_API_BASE_URL } from './constants';
+
+// Get the base URL for API calls based on the environment
 const getBaseUrl = () => {
   if (import.meta.env.PROD) {
-    // For production environment
-    const vercelUrl = import.meta.env.VITE_VERCEL_URL;
-    if (vercelUrl) {
-      return `https://${vercelUrl}`;
-    }
-    // Fallback to window.location.origin for client-side
-    return window.location.origin;
+    return import.meta.env.VITE_VERCEL_URL 
+      ? `https://${import.meta.env.VITE_VERCEL_URL}` 
+      : window.location.origin;
   }
-  // For development environment
-  return import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  return import.meta.env.VITE_API_URL || 'http://localhost:3001';
 };
 
-// Alternative base URL for fallback
+// Get fallback URL for when the primary endpoint fails
 const getFallbackBaseUrl = () => {
   if (import.meta.env.PROD) {
     return window.location.origin;
   }
-  // Use alternative port in development
   return 'http://localhost:3001';
 };
 
+// Create API endpoints with the given base URL
 const createEndpoints = (baseUrl: string) => ({
   events: `${baseUrl}/api/events`,
   news: `${baseUrl}/api/news`,
   team: `${baseUrl}/api/team`,
+  health: `${baseUrl}/api/health`,
 });
 
-export const API_ENDPOINTS = createEndpoints(getBaseUrl());
-export const FALLBACK_API_ENDPOINTS = createEndpoints(getFallbackBaseUrl());
+// Export the primary and fallback endpoints
+export const API_ENDPOINTS = {
+  events: `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/events`,
+  news: `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/news`,
+  team: `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/team`,
+};
+
+export const FALLBACK_API_ENDPOINTS = {
+  events: `${import.meta.env.VITE_VERCEL_URL || 'http://localhost:3001'}/api/events`,
+  news: `${import.meta.env.VITE_VERCEL_URL || 'http://localhost:3001'}/api/news`,
+  team: `${import.meta.env.VITE_VERCEL_URL || 'http://localhost:3001'}/api/team`,
+};
 
 // Helper function to fetch with fallback
-export const fetchWithFallback = async (endpoint: string, fallbackEndpoint: string, options: RequestInit = {}) => {
-  console.log(`🔄 Attempting primary fetch from: ${endpoint}`);
+export const fetchWithFallback = async (primaryUrl: string, fallbackUrl: string) => {
   try {
-    const response = await fetch(endpoint, options);
+    console.log('🔄 Attempting primary fetch from:', primaryUrl);
+    const response = await fetch(primaryUrl);
     if (!response.ok) {
-      throw new Error(`Primary fetch failed with status: ${response.status}`);
+      throw new Error(`Primary fetch failed with status ${response.status}`);
     }
+    const data = await response.json();
     console.log('✅ Primary fetch successful');
-    return response.json();
-  } catch (error) {
-    console.warn(`⚠️ Primary fetch failed:`, error);
-    console.log(`🔄 Attempting fallback fetch from: ${fallbackEndpoint}`);
-    
+    return data;
+  } catch (primaryError) {
+    console.log('⚠️ Primary fetch failed, attempting fallback:', fallbackUrl);
     try {
-      const fallbackResponse = await fetch(fallbackEndpoint, options);
+      const fallbackResponse = await fetch(fallbackUrl);
       if (!fallbackResponse.ok) {
-        throw new Error(`Fallback fetch failed with status: ${fallbackResponse.status}`);
+        throw new Error(`Fallback fetch failed with status ${fallbackResponse.status}`);
       }
+      const data = await fallbackResponse.json();
       console.log('✅ Fallback fetch successful');
-      return fallbackResponse.json();
+      return data;
     } catch (fallbackError) {
-      console.error('❌ Both primary and fallback fetches failed:', fallbackError);
-      throw fallbackError;
+      console.error('❌ Both primary and fallback fetches failed');
+      throw new Error('Failed to fetch data from both primary and fallback URLs');
     }
   }
 };
 
-// For assets/images
-export const getAssetPath = (path: string) => {
+// Helper function to get asset paths
+export const getAssetPath = (assetName: string) => {
+  console.log(`🔄 Loading asset: ${assetName}`);
   const baseUrl = getBaseUrl();
-  console.log(`🖼️ Loading asset from: ${baseUrl}/assets/${path}`);
-  return `${baseUrl}/assets/${path}`;
+  return `${baseUrl}/assets/${assetName}`;
 }; 

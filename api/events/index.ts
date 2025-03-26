@@ -1,67 +1,81 @@
-import express, { Request, Response, Router } from 'express';
-import { Event } from '../../models/Event';
-import dbConnect from '../../lib/mongodb';
+import { Router } from 'express';
+import mongoose from 'mongoose';
 
 const router = Router();
 
-// GET /api/events
-router.get('/', async (req: Request, res: Response) => {
-  try {
-    await dbConnect();
-    console.log('📨 GET /api/events - Processing request');
+// Define Event Schema
+const eventSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  date: { type: Date, required: true },
+  description: { type: String, required: true },
+  image: { type: String, required: true },
+  link: String,
+  status: { 
+    type: String, 
+    required: true,
+    enum: ['upcoming', 'ongoing', 'past'],
+    default: 'upcoming'
+  }
+}, {
+  timestamps: true
+});
 
-    const events = await Event.find().sort({ date: 1 });
+// Create Event Model (only if it doesn't exist)
+const Event = mongoose.models.Event || mongoose.model('Event', eventSchema);
+
+// GET all events
+router.get('/', async (req, res) => {
+  try {
+    console.log('📥 GET /api/events - Fetching all events...');
+    const events = await Event.find().sort({ date: -1 });
     console.log(`✅ Successfully fetched ${events.length} events`);
-    return res.json(events);
+    console.log('Events:', events);
+    res.json(events);
   } catch (error) {
-    console.error('❌ Error in events API:', error);
-    return res.status(500).json({ 
-      error: 'Failed to process request',
-      details: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
-    });
+    console.error('❌ Error fetching events:', error);
+    res.status(500).json({ error: 'Failed to fetch events' });
   }
 });
 
-// POST /api/events
-router.post('/', async (req: Request, res: Response) => {
+// POST new event
+router.post('/', async (req, res) => {
   try {
-    await dbConnect();
-    console.log('📨 POST /api/events - Processing request');
-
-    const newEvent = new Event({
+    console.log('📝 POST /api/events - Creating new event:', req.body);
+    
+    // Ensure date is properly formatted
+    const eventData = {
       ...req.body,
       date: new Date(req.body.date)
-    });
-    await newEvent.save();
-    console.log(`✅ Successfully created new event: ${newEvent.title}`);
-    return res.json(newEvent);
+    };
+    
+    const event = new Event(eventData);
+    await event.save();
+    
+    console.log('✅ Event created successfully:', event);
+    res.status(201).json(event);
   } catch (error) {
-    console.error('❌ Error in events API:', error);
-    return res.status(500).json({ 
-      error: 'Failed to process request',
-      details: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
+    console.error('❌ Error creating event:', error);
+    res.status(400).json({ 
+      error: 'Failed to create event',
+      details: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 });
 
-// DELETE /api/events/:id
-router.delete('/:id', async (req: Request, res: Response) => {
+// DELETE event
+router.delete('/:id', async (req, res) => {
   try {
-    await dbConnect();
-    console.log(`📨 DELETE /api/events/${req.params.id} - Processing request`);
-
-    await Event.findByIdAndDelete(req.params.id);
-    console.log(`✅ Successfully deleted event with ID: ${req.params.id}`);
-    return res.json({ message: 'Event deleted successfully' });
+    console.log('🗑️ DELETE /api/events/:id - Deleting event:', req.params.id);
+    const event = await Event.findByIdAndDelete(req.params.id);
+    if (!event) {
+      console.log('❌ Event not found');
+      return res.status(404).json({ error: 'Event not found' });
+    }
+    console.log('✅ Event deleted successfully');
+    res.json({ message: 'Event deleted successfully' });
   } catch (error) {
-    console.error('❌ Error in events API:', error);
-    return res.status(500).json({ 
-      error: 'Failed to process request',
-      details: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
-    });
+    console.error('❌ Error deleting event:', error);
+    res.status(500).json({ error: 'Failed to delete event' });
   }
 });
 

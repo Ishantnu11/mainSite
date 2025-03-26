@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { API_ENDPOINTS } from '../config/api';
 import {
   Box,
@@ -8,16 +8,7 @@ import {
   Text,
   VStack,
   Badge,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
-  useColorModeValue,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
+
   Skeleton,
   HStack,
 } from '@chakra-ui/react';
@@ -32,45 +23,7 @@ interface NewsItem {
   date: string;
 }
 
-const NewsCard: React.FC<{ item: NewsItem }> = ({ item }) => {
-  const cardBg = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
-
-  return (
-    <Box
-      bg={cardBg}
-      p={6}
-      borderRadius="lg"
-      border="1px"
-      borderColor={borderColor}
-      shadow="md"
-      transition="all 0.3s"
-      _hover={{ transform: 'translateY(-2px)', shadow: 'lg' }}
-    >
-      <VStack align="start" spacing={3}>
-        <Badge
-          colorScheme={item.type === 'news' ? 'blue' : 'green'}
-          fontSize="sm"
-          px={2}
-          py={1}
-          borderRadius="full"
-        >
-          {item.type === 'news' ? 'News' : 'Internship'}
-        </Badge>
-        <Heading size="md">{item.title}</Heading>
-        {item.type === 'internship' && (
-          <Text color="gray.500" fontSize="sm">
-            {item.company} • {item.location}
-          </Text>
-        )}
-        <Text>{item.description}</Text>
-        <Text fontSize="sm" color="gray.500">
-          {new Date(item.date).toLocaleDateString()}
-        </Text>
-      </VStack>
-    </Box>
-  );
-};
+// Removed unused NewsCard component
 
 const News = () => {
   const [news, setNews] = useState<NewsItem[]>([]);
@@ -80,14 +33,42 @@ const News = () => {
   useEffect(() => {
     const fetchNews = async () => {
       try {
+        setIsLoading(true);
+        console.log('Fetching news from:', API_ENDPOINTS.news);
         const response = await fetch(API_ENDPOINTS.news);
+        
         if (!response.ok) {
-          throw new Error('Failed to fetch news');
+          console.error('News fetch failed with status:', response.status);
+          throw new Error(`Failed to fetch news: ${response.status}`);
         }
+        
         const data = await response.json();
+        console.log('News data received:', data);
         setNews(data);
       } catch (err) {
+        console.error('Error fetching news:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
+        // Add fallback data for development/testing
+        if (import.meta.env.DEV) {
+          setNews([
+            {
+              _id: '1',
+              title: 'GDG Gurugram University Launched',
+              description: 'We are excited to announce the launch of Google Developer Group at Gurugram University!',
+              type: 'news',
+              date: new Date().toISOString()
+            },
+            {
+              _id: '2',
+              title: 'Summer Internship Opportunity',
+              description: 'Great opportunity for students to gain practical experience in web development.',
+              type: 'internship',
+              company: 'Google',
+              location: 'Remote',
+              date: new Date().toISOString()
+            }
+          ]);
+        }
       } finally {
         setIsLoading(false);
       }

@@ -9,6 +9,7 @@ import {
   TabPanels,
   Tabs,
   VStack,
+  HStack,
   Button,
   FormControl,
   FormLabel,
@@ -63,7 +64,7 @@ interface TeamMember {
 }
 
 const Admin = () => {
-  const { isAdmin, logout } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -73,7 +74,7 @@ const Admin = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
   // Event form state
-  const [eventForm, setEventForm] = useState({
+  const [eventForm, setEventForm] = useState<Event>({
     title: '',
     date: '',
     description: '',
@@ -81,6 +82,10 @@ const Admin = () => {
     link: '',
     status: 'upcoming'
   });
+
+  // Edit mode state
+  const [editMode, setEditMode] = useState(false);
+  const [editingEventId, setEditingEventId] = useState<string | null>(null);
 
   // News form state
   const [newsForm, setNewsForm] = useState({
@@ -105,10 +110,17 @@ const Admin = () => {
   // Add state for loading and error
   const [isLoading, setIsLoading] = useState(false);
   
+  // Check if user is logged in
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
+
   // Fetch all data when component mounts
   useEffect(() => {
-    fetchNewsItems();
     fetchEvents();
+    fetchNewsItems();
     fetchTeamMembers();
   }, []);
 
@@ -179,37 +191,83 @@ const Admin = () => {
     e.preventDefault();
     setIsLoading(true);
     
+    // Validate that all required fields are filled
+    if (!eventForm.title || !eventForm.date || !eventForm.description || !eventForm.image) {
+      toast({
+        title: 'Missing required fields',
+        description: 'Please fill in all required fields',
+        status: 'warning',
+        duration: 3000,
+      });
+      setIsLoading(false);
+      return;
+    }
+    
     const eventData = {
       ...eventForm,
-      date: new Date(eventForm.date).toISOString()
+      date: new Date(eventForm.date).toISOString(),
+      status: eventForm.status || 'upcoming' // Ensure status is set
     };
     
     try {
-      const response = await fetch(API_ENDPOINTS.events, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(eventData),
-      });
+      let response;
+      let successMessage;
+      
+      if (editMode && editingEventId) {
+        // Update existing event
+        console.log(`📝 Updating event ${editingEventId} with data:`, eventData);
+        response = await fetch(`${API_ENDPOINTS.events}?id=${editingEventId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(eventData),
+        });
+        successMessage = `Event "${eventForm.title}" has been updated`;
+      } else {
+        // Create new event
+        console.log('📝 Creating new event with data:', eventData);
+        response = await fetch(API_ENDPOINTS.events, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(eventData),
+        });
+        successMessage = `Event "${eventForm.title}" has been added with status: ${eventForm.status}`;
+      }
 
       if (!response.ok) {
-        throw new Error('Failed to add event');
+        throw new Error(editMode ? 'Failed to update event' : 'Failed to add event');
       }
+
+      const savedEvent = await response.json();
+      console.log(editMode ? '✅ Event updated successfully:' : '✅ Event created successfully:', savedEvent);
 
       await fetchEvents();
       
       toast({
-        title: 'Event added successfully',
+        title: editMode ? 'Event updated successfully' : 'Event added successfully',
+        description: successMessage,
         status: 'success',
         duration: 3000,
       });
       
-      setEventForm({ title: '', date: '', description: '', image: '', link: '', status: 'upcoming' });
+      // Reset form and edit mode
+      setEventForm({
+        title: '',
+        date: '',
+        description: '',
+        image: '',
+        link: '',
+        status: 'upcoming'
+      });
+      setEditMode(false);
+      setEditingEventId(null);
     } catch (error) {
-      console.error('Error adding event:', error);
+      console.error(editMode ? '❌ Error updating event:' : '❌ Error adding event:', error);
       toast({
-        title: 'Error adding event',
+        title: editMode ? 'Error updating event' : 'Error adding event',
         description: error instanceof Error ? error.message : 'Unknown error occurred',
         status: 'error',
         duration: 3000,
@@ -368,8 +426,7 @@ const Admin = () => {
     }
   };
 
-  if (!isAdmin) {
-    navigate('/login');
+  if (!user) {
     return null;
   }
 
@@ -480,7 +537,9 @@ const Admin = () => {
                   border="1px solid"
                   borderColor="gray.600"
                 >
-                  <Heading size="md" mb={6} color="blue.100">Add New Event</Heading>
+                  <Heading size="md" mb={6} color="blue.100">
+                    {editMode ? 'Edit Event' : 'Add New Event'}
+                  </Heading>
                   <VStack as="form" spacing={6} align="stretch" onSubmit={handleEventSubmit}>
                     <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
                       <FormControl isRequired>
@@ -514,7 +573,7 @@ const Admin = () => {
                       <FormLabel color="gray.200">Status</FormLabel>
                       <Select
                         value={eventForm.status}
-                        onChange={(e) => setEventForm({ ...eventForm, status: e.target.value as Event['status'] })}
+                        onChange={(e) => setEventForm({ ...eventForm, status: e.target.value as 'upcoming' | 'ongoing' | 'past' })}
                         bg="gray.800"
                         border="1px solid"
                         borderColor="gray.600"
@@ -569,18 +628,43 @@ const Admin = () => {
                       </FormControl>
                     </SimpleGrid>
 
-                    <Button 
-                      type="submit" 
-                      colorScheme="blue"
-                      size="lg"
-                      isLoading={isLoading}
-                      _hover={{
-                        transform: 'translateY(-2px)',
-                        boxShadow: 'lg',
-                      }}
-                    >
-                      Add Event
-                    </Button>
+                    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4} width="100%">
+                      <Button 
+                        type="submit" 
+                        colorScheme="blue"
+                        size="lg"
+                        isLoading={isLoading}
+                        _hover={{
+                          transform: 'translateY(-2px)',
+                          boxShadow: 'lg',
+                        }}
+                      >
+                        {editMode ? 'Update Event' : 'Add Event'}
+                      </Button>
+                      {editMode && (
+                        <Button 
+                          colorScheme="gray"
+                          size="lg"
+                          onClick={() => {
+                            setEventForm({
+                              title: '',
+                              date: '',
+                              description: '',
+                              image: '',
+                              link: '',
+                              status: 'upcoming'
+                            });
+                            setEditMode(false);
+                            setEditingEventId(null);
+                          }}
+                          _hover={{
+                            transform: 'translateY(-2px)',
+                          }}
+                        >
+                          Cancel Edit
+                        </Button>
+                      )}
+                    </SimpleGrid>
                   </VStack>
                 </Box>
 
@@ -623,18 +707,49 @@ const Admin = () => {
                               </Badge>
                             </Td>
                             <Td>
-                              <IconButton
-                                aria-label="Delete event"
-                                icon={<FaTrash />}
-                                colorScheme="red"
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleDelete('event', event._id as string)}
-                                _hover={{
-                                  bg: 'rgba(254, 178, 178, 0.12)',
-                                  transform: 'translateY(-2px)'
-                                }}
-                              />
+                              <HStack spacing={2}>
+                                <IconButton
+                                  aria-label="Edit event"
+                                  icon={<FaEdit />}
+                                  colorScheme="blue"
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    // Format date for input field (YYYY-MM-DD)
+                                    const formattedDate = new Date(event.date).toISOString().split('T')[0];
+                                    
+                                    setEventForm({
+                                      title: event.title,
+                                      date: formattedDate,
+                                      description: event.description,
+                                      image: event.image,
+                                      link: event.link || '',
+                                      status: event.status
+                                    });
+                                    setEditMode(true);
+                                    setEditingEventId(event._id as string);
+                                    
+                                    // Scroll to form
+                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                  }}
+                                  _hover={{
+                                    bg: 'rgba(66, 153, 225, 0.12)',
+                                    transform: 'translateY(-2px)'
+                                  }}
+                                />
+                                <IconButton
+                                  aria-label="Delete event"
+                                  icon={<FaTrash />}
+                                  colorScheme="red"
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleDelete('event', event._id as string)}
+                                  _hover={{
+                                    bg: 'rgba(254, 178, 178, 0.12)',
+                                    transform: 'translateY(-2px)'
+                                  }}
+                                />
+                              </HStack>
                             </Td>
                           </Tr>
                         ))}

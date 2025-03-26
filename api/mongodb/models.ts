@@ -5,6 +5,12 @@ const eventSchema = new mongoose.Schema({
   date: Date,
   description: String,
   image: String,
+  link: String,
+  status: {
+    type: String,
+    enum: ['upcoming', 'ongoing', 'past'],
+    default: 'upcoming'
+  },
 });
 
 const newsSchema = new mongoose.Schema({

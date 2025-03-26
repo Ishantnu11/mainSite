@@ -1,19 +1,14 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+// This is a placeholder file to maintain imports in other files
+// Firebase functionality has been disabled as requested
 
-const firebaseConfig = {
-  // Replace with your Firebase config
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+// Mock Firebase objects
+const mockApp = {};
+const mockAuth = {
+  currentUser: null,
 };
+const mockDb = {};
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const auth = mockAuth;
+export const db = mockDb;
 
-export default app; 
+export default mockApp; 

@@ -1,64 +1,86 @@
-import mongoose, { ConnectOptions } from 'mongoose';
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
 
-declare global {
-  var mongoose: {
-    conn: typeof mongoose | null;
-    promise: Promise<typeof mongoose> | null;
-  } | undefined;
+// Load environment variables from .env file
+dotenv.config();
+
+interface GlobalMongoose {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
 }
 
-const MONGODB_URI = process.env.MONGODB_URI!;
+declare global {
+  var mongoose: GlobalMongoose | undefined;
+}
 
-if (!MONGODB_URI) {
+if (!process.env.MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable inside .env');
 }
 
-// Initialize global mongoose state
+const MONGODB_URI = process.env.MONGODB_URI;
+
+// Log the MongoDB connection string (without credentials)
+const sanitizedUri = MONGODB_URI.replace(
+  /mongodb(\+srv)?:\/\/[^:]+:[^@]+@/,
+  'mongodb$1://****:****@'
+);
+console.log('🔌 Attempting to connect to MongoDB:', sanitizedUri);
+
+const cached: GlobalMongoose = global.mongoose || { conn: null, promise: null };
+
 if (!global.mongoose) {
-  global.mongoose = {
-    conn: null,
-    promise: null,
-  };
+  global.mongoose = cached;
 }
 
-async function dbConnect() {
-  if (global.mongoose?.conn) {
-    console.log('🔄 Using existing MongoDB connection');
-    return global.mongoose.conn;
+export async function connectToDatabase() {
+  if (cached.conn) {
+    console.log('✅ Using cached MongoDB connection');
+    return cached.conn;
   }
 
-  if (!global.mongoose?.promise) {
-    console.log('🔌 Creating new MongoDB connection...');
-    
-    const opts: ConnectOptions = {
-      bufferCommands: true,
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
     };
 
-    global.mongoose.promise = mongoose.connect(MONGODB_URI, opts)
-      .then((mongoose) => {
-        console.log('✅ MongoDB connected successfully');
-        return mongoose;
-      })
-      .catch((error) => {
-        console.error('❌ MongoDB connection error:', error);
-        throw error;
-      });
+    console.log('🔄 Initializing new MongoDB connection...');
+    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
+      console.log('✅ MongoDB connected successfully');
+      console.log(`📊 Connected to database: ${mongoose.connection.name}`);
+      console.log(`🖥️ Database host: ${mongoose.connection.host}`);
+      return mongoose;
+    });
   }
 
   try {
-    const mongoose = await global.mongoose.promise;
-    global.mongoose.conn = mongoose;
-    return mongoose;
-  } catch (error) {
-    global.mongoose.promise = null;
-    throw error;
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    console.error('❌ MongoDB connection error:', e);
+    console.log('💡 Tips:');
+    console.log('  1. Check if your MongoDB URI is correct');
+    console.log('  2. Ensure MongoDB is running');
+    console.log('  3. Check if IP whitelist includes your current IP');
+    console.log('  4. Verify database user credentials');
+    throw e;
   }
+
+  return cached.conn;
 }
 
-// Listen for connection events
-mongoose.connection.on('connected', () => console.log('✅ MongoDB connected event fired'));
-mongoose.connection.on('error', (err) => console.error('❌ MongoDB error event:', err));
-mongoose.connection.on('disconnected', () => console.log('⚠️ MongoDB disconnected event fired'));
-mongoose.connection.on('reconnected', () => console.log('✅ MongoDB reconnected event fired'));
+// Add event listeners for connection status
+mongoose.connection.on('connected', () => {
+  console.log('✅ MongoDB connected successfully');
+});
 
-export default dbConnect; 
+mongoose.connection.on('error', (err) => {
+  console.error('❌ MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('⚠️ MongoDB disconnected');
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log('🔄 MongoDB reconnected');
+}); 

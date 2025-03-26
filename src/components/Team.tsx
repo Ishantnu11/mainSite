@@ -14,7 +14,7 @@ import {
   Divider,
 } from '@chakra-ui/react';
 import { FaLinkedin, FaTwitter, FaGithub } from 'react-icons/fa';
-import { API_ENDPOINTS } from '../config/apiEndpoints';
+import { API_ENDPOINTS } from '../config/api';
 import JoinUs from './JoinUs';
 
 interface TeamMember {
@@ -33,23 +33,123 @@ const Team = () => {
   const roleColor = useColorModeValue('purple.500', 'purple.300');
   const borderColor = useColorModeValue('gray.100', 'gray.700');
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchTeamMembers = async () => {
       try {
+        setLoading(true);
+        console.log('Fetching team members from:', API_ENDPOINTS.team);
         const response = await fetch(API_ENDPOINTS.team);
+        
         if (!response.ok) {
-          throw new Error('Failed to fetch team members');
+          console.error('Team fetch failed with status:', response.status);
+          throw new Error(`Failed to fetch team members: ${response.status}`);
         }
+        
         const data = await response.json();
+        console.log('Team data received:', data);
         setTeamMembers(data);
-      } catch (error) {
-        console.error('Error fetching team members:', error);
+      } catch (err) {
+        console.error('Error fetching team members:', err);
+        setError(err instanceof Error ? err.message : 'An error occurred');
+        
+        // Add fallback data for development/testing
+        if (import.meta.env.DEV) {
+          setTeamMembers([
+            {
+              _id: '1',
+              name: 'Akhil Sharma',
+              role: 'GDG Head',
+              image: 'https://randomuser.me/api/portraits/men/1.jpg',
+              linkedin: 'https://linkedin.com',
+              github: 'https://github.com'
+            },
+            {
+              _id: '2',
+              name: 'Jane Doe',
+              role: 'Tech Lead',
+              image: 'https://randomuser.me/api/portraits/women/2.jpg',
+              linkedin: 'https://linkedin.com',
+              twitter: 'https://twitter.com'
+            },
+            {
+              _id: '3',
+              name: 'John Smith',
+              role: 'Developer',
+              image: 'https://randomuser.me/api/portraits/men/3.jpg',
+              github: 'https://github.com'
+            },
+            {
+              _id: '4',
+              name: 'Emily Johnson',
+              role: 'Designer',
+              image: 'https://randomuser.me/api/portraits/women/4.jpg',
+              linkedin: 'https://linkedin.com'
+            }
+          ]);
+        }
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchTeamMembers();
   }, []);
 
+  if (loading) {
+    return (
+      <Box as="section" bg={useColorModeValue('gray.50', 'gray.900')}>
+        <Container maxW="8xl" py={{ base: 12, md: 16 }}>
+          <VStack spacing={12} align="stretch">
+            <Box textAlign="center">
+              <Heading
+                as="h2"
+                size="2xl"
+                fontWeight="bold"
+                mb={4}
+                bgGradient="linear(to-r, google.blue, google.red)"
+                bgClip="text"
+              >
+                Our Team
+              </Heading>
+              <Text fontSize="xl" color={useColorModeValue('gray.600', 'gray.400')}>
+                Loading team members...
+              </Text>
+            </Box>
+          </VStack>
+        </Container>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box as="section" bg={useColorModeValue('gray.50', 'gray.900')}>
+        <Container maxW="8xl" py={{ base: 12, md: 16 }}>
+          <VStack spacing={12} align="stretch">
+            <Box textAlign="center">
+              <Heading
+                as="h2"
+                size="2xl"
+                fontWeight="bold"
+                mb={4}
+                bgGradient="linear(to-r, google.blue, google.red)"
+                bgClip="text"
+              >
+                Our Team
+              </Heading>
+              <Text fontSize="xl" color="red.500">
+                Error loading team members: {error}
+              </Text>
+            </Box>
+          </VStack>
+        </Container>
+      </Box>
+    );
+  }
+  
   return (
     <Box as="section" bg={useColorModeValue('gray.50', 'gray.900')}>
       <Container maxW="8xl" py={{ base: 12, md: 16 }}>

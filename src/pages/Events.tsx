@@ -36,6 +36,7 @@ const Events = () => {
   const [error, setError] = useState<string | null>(null);
   const [tabIndex, setTabIndex] = useState(0);
   const [page, setPage] = useState([0, 0]);
+  // Direction is used in the slideVariants function
   const [direction, setDirection] = useState(0);
   const toast = useToast();
 
@@ -133,7 +134,7 @@ const Events = () => {
               bgClip="text"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ type: "spring", duration: 0.5 }}
+              transition={{ duration: 0.5 }}
             >
               Community Events
             </Heading>
@@ -146,7 +147,7 @@ const Events = () => {
               mx="auto"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ type: "tween", delay: 0.2 }}
+              transition={{ duration: 0.3 }}
             >
               Join us for exciting tech events, workshops, and meetups. Connect with fellow
               developers and grow together.
@@ -158,8 +159,9 @@ const Events = () => {
             colorScheme="blue" 
             index={tabIndex}
             onChange={(index) => {
-              const direction = index > tabIndex ? 1 : -1;
-              setPage([page + direction, direction]);
+              const newDirection = index > tabIndex ? 1 : -1;
+              setPage([page[0] + newDirection, newDirection]);
+              setDirection(newDirection);
               setTabIndex(index);
             }}
             isLazy

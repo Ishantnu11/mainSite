@@ -1,54 +1,57 @@
-# React + TypeScript + Vite
+# GDG Gurugram University Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the official website for the Google Developer Group at Gurugram University, built with React, TypeScript, Vite, and Express.js.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Modern UI with Chakra UI components
+- Full-stack application with Express.js backend
+- MongoDB integration for data storage
+- Responsive design for all device sizes
+- Team, News, and Events sections
 
-## Expanding the ESLint configuration
+## Local Development
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Create a `.env` file based on `.env.example`
+4. Run the development server: `npm run dev`
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## Deployment to Render
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+This project is configured for easy deployment on [Render](https://render.com). Follow these steps to deploy:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. **Create a new Web Service on Render**
+   - Sign up or log in to [Render](https://render.com)
+   - Click "New +" and select "Web Service"
+   - Connect your GitHub repository
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+2. **Configure the Web Service**
+   - Name: `gdg-gug-website` (or your preferred name)
+   - Environment: `Node`
+   - Build Command: `npm install && npm run build`
+   - Start Command: `npm run start`
+   - Select the appropriate instance type (Free tier works for testing)
+
+3. **Set Environment Variables**
+   - Add the following environment variables in the Render dashboard:
+     - `NODE_ENV`: `production`
+     - `PORT`: `3001`
+     - `MONGODB_URI`: Your MongoDB connection string
+
+4. **Deploy**
+   - Click "Create Web Service"
+   - Render will automatically build and deploy your application
+
+5. **Verify Deployment**
+   - Once deployment is complete, visit your Render URL to verify everything is working
+   - Check the `/api/health` endpoint to confirm the API is running
+
+## Troubleshooting
+
+If you encounter issues with the deployment:
+
+1. Check Render logs for any errors
+2. Verify your MongoDB connection string is correct
+3. Ensure your MongoDB IP whitelist includes Render's IPs
+4. Check that all environment variables are properly set
