@@ -11,7 +11,7 @@ import {
   Image,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { FaWhatsapp, FaInstagram, FaTwitter, FaLinkedin, FaGlobe } from 'react-icons/fa';
+import { FaInstagram, FaTwitter, FaLinkedin, FaGlobe } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 
 const CommudelIcon = () => (

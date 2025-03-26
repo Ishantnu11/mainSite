@@ -134,7 +134,7 @@ const Events = () => {
               bgClip="text"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: '0.5s' }}
             >
               Community Events
             </Heading>
@@ -147,7 +147,7 @@ const Events = () => {
               mx="auto"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: '0.3s' }}
             >
               Join us for exciting tech events, workshops, and meetups. Connect with fellow
               developers and grow together.

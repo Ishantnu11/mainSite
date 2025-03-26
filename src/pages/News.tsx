@@ -49,7 +49,7 @@ const News = () => {
         console.error('Error fetching news:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
         // Add fallback data for development/testing
-        if (import.meta.env.DEV) {
+        if (process.env.NODE_ENV !== 'production') {
           setNews([
             {
               _id: '1',

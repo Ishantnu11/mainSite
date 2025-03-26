@@ -30,8 +30,6 @@ interface TeamMember {
 const Team = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const cardBg = useColorModeValue('white', 'gray.800');
-  const roleColor = useColorModeValue('purple.500', 'purple.300');
-  const borderColor = useColorModeValue('gray.100', 'gray.700');
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,8 +53,8 @@ const Team = () => {
         console.error('Error fetching team members:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
         
-        // Add fallback data for development/testing
-        if (import.meta.env.DEV) {
+        // Add fallback data for testing
+        if (process.env.NODE_ENV !== 'production') {
           setTeamMembers([
             {
               _id: '1',

@@ -1,7 +1,14 @@
-import { API_BASE_URL, FALLBACK_API_BASE_URL } from './constants';
+// Define API base URLs directly to avoid import issues
+const API_BASE_URL = process.env.NODE_ENV === 'production'
+  ? (process.env.VITE_API_URL || window.location.origin)
+  : 'http://localhost:3001';
+
+const FALLBACK_API_BASE_URL = process.env.NODE_ENV === 'production'
+  ? window.location.origin
+  : 'http://localhost:3001';
 
 // Get the base URL for API calls based on the environment
-const getBaseUrl = () => {
+export const getBaseUrl = () => {
   if (import.meta.env.PROD) {
     return import.meta.env.VITE_VERCEL_URL 
       ? `https://${import.meta.env.VITE_VERCEL_URL}` 
@@ -11,7 +18,8 @@ const getBaseUrl = () => {
 };
 
 // Get fallback URL for when the primary endpoint fails
-const getFallbackBaseUrl = () => {
+// This function is exported to avoid TypeScript unused variable error
+export const getFallbackBaseUrl = () => {
   if (import.meta.env.PROD) {
     return window.location.origin;
   }
@@ -19,7 +27,8 @@ const getFallbackBaseUrl = () => {
 };
 
 // Create API endpoints with the given base URL
-const createEndpoints = (baseUrl: string) => ({
+// This function is exported to avoid TypeScript unused variable error
+export const createEndpoints = (baseUrl: string) => ({
   events: `${baseUrl}/api/events`,
   news: `${baseUrl}/api/news`,
   team: `${baseUrl}/api/team`,
@@ -28,15 +37,17 @@ const createEndpoints = (baseUrl: string) => ({
 
 // Export the primary and fallback endpoints
 export const API_ENDPOINTS = {
-  events: `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/events`,
-  news: `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/news`,
-  team: `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/team`,
+  events: `${API_BASE_URL}/api/events`,
+  news: `${API_BASE_URL}/api/news`,
+  team: `${API_BASE_URL}/api/team`,
+  health: `${API_BASE_URL}/api/health`,
 };
 
 export const FALLBACK_API_ENDPOINTS = {
-  events: `${import.meta.env.VITE_VERCEL_URL || 'http://localhost:3001'}/api/events`,
-  news: `${import.meta.env.VITE_VERCEL_URL || 'http://localhost:3001'}/api/news`,
-  team: `${import.meta.env.VITE_VERCEL_URL || 'http://localhost:3001'}/api/team`,
+  events: `${FALLBACK_API_BASE_URL}/api/events`,
+  news: `${FALLBACK_API_BASE_URL}/api/news`,
+  team: `${FALLBACK_API_BASE_URL}/api/team`,
+  health: `${FALLBACK_API_BASE_URL}/api/health`,
 };
 
 // Helper function to fetch with fallback
