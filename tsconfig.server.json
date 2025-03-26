@@ -19,7 +19,7 @@
     }
   },
   "include": [
-    "server.js",
+    "server.ts",
     "api/**/*.ts",
     "lib/**/*.ts",
     "models/**/*.ts"

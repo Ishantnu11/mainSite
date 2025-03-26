@@ -2,7 +2,7 @@ services:
   - type: web
     name: gdg-gug-website
     env: node
-    buildCommand: npm install && npm run build
+    buildCommand: npm install && npm run build:server && npm run build
     startCommand: npm run start
     envVars:
       - key: NODE_ENV

@@ -28,6 +28,11 @@ console.log('🔌 Attempting to connect to MongoDB:', sanitizedUri);
 
 const cached: GlobalMongoose = global.mongoose || { conn: null, promise: null };
 
+// Ensure cached is defined
+if (!cached) {
+  throw new Error('Failed to initialize MongoDB connection cache');
+}
+
 if (!global.mongoose) {
   global.mongoose = cached;
 }
@@ -41,7 +46,7 @@ export async function connectToDatabase() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-    };
+    } as mongoose.ConnectOptions;
 
     console.log('🔄 Initializing new MongoDB connection...');
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
