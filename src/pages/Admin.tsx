@@ -64,7 +64,7 @@ interface TeamMember {
 }
 
 const Admin = () => {
-  const { user, isAdmin, logout } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
 
