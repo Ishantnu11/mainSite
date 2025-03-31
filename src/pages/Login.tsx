@@ -15,10 +15,11 @@ import {
   Icon,
   Flex,
   Image,
+  IconButton,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaGoogle } from 'react-icons/fa';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -28,7 +29,7 @@ const Login = () => {
   const { login, user } = useAuth();
   const navigate = useNavigate();
   const toast = useToast();
-  
+
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
@@ -47,12 +48,12 @@ const Login = () => {
         status: 'success',
         duration: 3000,
       });
-      navigate('/admin');
+      // Force navigation to admin after successful login
+      window.location.href = '/admin';
     } catch (error: any) {
       console.error('Login error:', error);
       let errorMessage = 'Please check your credentials and try again.';
       
-      // Handle specific Firebase auth errors
       if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         errorMessage = 'Invalid email or password';
       } else if (error.code === 'auth/too-many-requests') {
@@ -71,142 +72,160 @@ const Login = () => {
       setLoading(false);
     }
   };
-  
+
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   return (
-    <Box 
-      minH="100vh" 
+    <Box
+      minH="100vh"
+      display="flex"
+      alignItems="center"
       bg="black"
       position="relative"
       overflow="hidden"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
     >
-      {/* Background Effects */}
+      {/* GDG-themed decorative elements */}
       <Box
         position="absolute"
-        top="5%"
-        left="20%"
-        width="600px"
-        height="600px"
-        background="radial-gradient(circle, rgba(25, 118, 210, 0.1) 0%, transparent 70%)"
-        filter="blur(40px)"
-        zIndex={0}
+        right="-100px"
+        top="-100px"
+        w="400px"
+        h="400px"
+        borderRadius="full"
+        bg="#4285F4"
+        opacity="0.15"
       />
       <Box
         position="absolute"
-        top="40%"
-        right="10%"
-        width="500px"
-        height="500px"
-        background="radial-gradient(circle, rgba(156, 39, 176, 0.1) 0%, transparent 70%)"
-        filter="blur(40px)"
-        zIndex={0}
+        left="-50px"
+        bottom="-50px"
+        w="300px"
+        h="300px"
+        borderRadius="full"
+        bg="#0F9D58"
+        opacity="0.15"
+      />
+      <Box
+        position="absolute"
+        left="30%"
+        top="20%"
+        w="200px"
+        h="200px"
+        borderRadius="full"
+        bg="#DB4437"
+        opacity="0.1"
       />
 
-      <Container maxW="md" position="relative" zIndex={1}>
-        <Flex direction="row" overflow="hidden" borderRadius="xl" boxShadow="2xl">
-          {/* Left side - Brand/Logo */}
-          <Box 
-            bg="linear-gradient(135deg, #4285F4 0%, #0F9D58 100%)"
-            p={8} 
-            color="white"
-            display="flex"
-            flexDirection="column"
-            justifyContent="center"
-            alignItems="center"
-            width="40%"
-          >
-            <VStack spacing={6} align="center">
-              <Heading 
-                size="xl" 
-                fontWeight="bold"
-                textAlign="center"
-                letterSpacing="tight"
-              >
-                GDG Admin Portal
-              </Heading>
-              <Text fontSize="md" textAlign="center" opacity={0.9}>
-                Access the dashboard to manage events, news, and team members.
-              </Text>
-              <Image 
-                src="/logo.png" 
-                alt="GDG Logo"
-                fallbackSrc="https://via.placeholder.com/150?text=GDG"
-                boxSize="100px"
-                mt={4}
-              />
-            </VStack>
-          </Box>
+      <Container maxW="md" py={12} position="relative">
+        <VStack
+          spacing={8}
+          bg="whiteAlpha.100"
+          p={8}
+          borderRadius="xl"
+          boxShadow="2xl"
+          w="full"
+          backdropFilter="blur(10px)"
+          border="1px solid"
+          borderColor="whiteAlpha.200"
+        >
+          <VStack spacing={3} w="full" align="center">
+            <Image 
+              src="/gdg-logo.png"
+              alt="GDG Logo"
+              boxSize="80px"
+              mb={2}
+            />
+            <Heading size="lg" color="white">Welcome to GDG Admin</Heading>
+            <Text color="whiteAlpha.800">Please enter your credentials to continue</Text>
+          </VStack>
 
-          {/* Right side - Login Form */}
-          <Box 
-            bg="white" 
-            p={8}
-            width="60%"
-          >
-            <VStack spacing={6} align="stretch">
-              <Heading size="lg" fontWeight="bold" color="blue.500">
-                Sign In
-              </Heading>
-              
-              <Text color="gray.500">
-                Enter your credentials to access the dashboard
-              </Text>
+          <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+            <VStack spacing={4} w="full">
+              <FormControl>
+                <FormLabel color="whiteAlpha.900">Email</FormLabel>
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  size="lg"
+                  borderRadius="md"
+                  bg="whiteAlpha.100"
+                  border="1px solid"
+                  borderColor="whiteAlpha.300"
+                  color="white"
+                  _placeholder={{ color: 'whiteAlpha.500' }}
+                  _hover={{ borderColor: 'blue.400' }}
+                  _focus={{ borderColor: 'blue.400', boxShadow: '0 0 0 1px #4285F4' }}
+                />
+              </FormControl>
 
-              <VStack as="form" spacing={5} w="full" onSubmit={handleSubmit}>
-                <FormControl isRequired>
-                  <FormLabel>Email</FormLabel>
+              <FormControl>
+                <FormLabel color="whiteAlpha.900">Password</FormLabel>
+                <InputGroup>
                   <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    size="lg"
+                    borderRadius="md"
+                    bg="whiteAlpha.100"
+                    border="1px solid"
+                    borderColor="whiteAlpha.300"
+                    color="white"
+                    _placeholder={{ color: 'whiteAlpha.500' }}
+                    _hover={{ borderColor: 'blue.400' }}
+                    _focus={{ borderColor: 'blue.400', boxShadow: '0 0 0 1px #4285F4' }}
                   />
-                </FormControl>
-
-                <FormControl isRequired>
-                  <FormLabel>Password</FormLabel>
-                  <InputGroup>
-                    <Input
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your password"
+                  <InputRightElement h="full">
+                    <IconButton
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      icon={showPassword ? <FaEyeSlash /> : <FaEye />}
+                      variant="ghost"
+                      onClick={togglePasswordVisibility}
+                      color="whiteAlpha.700"
+                      _hover={{ bg: 'whiteAlpha.100' }}
                     />
-                    <InputRightElement>
-                      <Button
-                        variant="ghost"
-                        onClick={togglePasswordVisibility}
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        size="sm"
-                      >
-                        <Icon as={showPassword ? FaEyeSlash : FaEye} color="gray.500" />
-                      </Button>
-                    </InputRightElement>
-                  </InputGroup>
-                </FormControl>
+                  </InputRightElement>
+                </InputGroup>
+              </FormControl>
 
-                <Text fontSize="sm" color="gray.500">
-                  Full access to all features
-                </Text>
-
+              <VStack w="full" spacing={4} pt={2}>
                 <Button
                   type="submit"
-                  colorScheme="blue"
                   w="full"
-                  mt={4}
+                  size="lg"
+                  borderRadius="md"
+                  bg="#4285F4"
+                  color="white"
+                  _hover={{ bg: '#357ABD' }}
+                  _active={{ bg: '#2D6AA0' }}
                   isLoading={loading}
                   loadingText="Signing in..."
                 >
-                  Sign In
+                  Sign in
+                </Button>
+                <Button
+                  leftIcon={<FaGoogle />}
+                  variant="outline"
+                  size="lg"
+                  w="full"
+                  borderRadius="md"
+                  color="white"
+                  borderColor="whiteAlpha.300"
+                  _hover={{ bg: 'whiteAlpha.100' }}
+                >
+                  Sign in with Google
                 </Button>
               </VStack>
             </VStack>
-          </Box>
-        </Flex>
+          </form>
+
+          <Text color="whiteAlpha.700" fontSize="sm" textAlign="center">
+            Having trouble? Contact your administrator
+          </Text>
+        </VStack>
       </Container>
     </Box>
   );
