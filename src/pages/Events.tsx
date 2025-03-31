@@ -47,17 +47,28 @@ const Events = () => {
       setError(null);
 
       try {
-        const data = await fetchWithFallback(
+        const response = await fetchWithFallback(
           API_ENDPOINTS.events,
           FALLBACK_API_ENDPOINTS.events
         );
         
-        console.log(`✅ Successfully fetched ${data.length} events`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('✅ Successfully fetched events:', data);
+        
+        if (!Array.isArray(data)) {
+          throw new Error('Invalid data format: expected an array of events');
+        }
+        
         setEvents(data);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to fetch events';
         console.error('❌ Error fetching events:', errorMessage);
         setError(errorMessage);
+        setEvents([]); // Set empty array on error
         toast({
           title: 'Error fetching events',
           description: errorMessage,
@@ -74,6 +85,10 @@ const Events = () => {
   }, [toast]);
 
   const filterEvents = (status: Event['status']) => {
+    if (!Array.isArray(events)) {
+      console.error('Events is not an array:', events);
+      return [];
+    }
     return events.filter(event => event.status === status);
   };
 
