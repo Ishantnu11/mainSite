@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import dbConnect from '../../lib/mongodb';
-import News from '../../models/News';
+import { News } from '../../models';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { id } = req.query;
