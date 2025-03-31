@@ -1,4 +1,4 @@
-import { Box, Container, Heading, Text, SimpleGrid, VStack, Image, HStack, Link, Icon, Alert, AlertIcon, AlertTitle, AlertDescription, useColorModeValue } from '@chakra-ui/react'
+import { Box, Container, Heading, Text, SimpleGrid, VStack, Image, HStack, Link, Icon, Alert, AlertIcon, AlertTitle, AlertDescription } from '@chakra-ui/react'
 import { FaLinkedin, FaTwitter, FaGithub } from 'react-icons/fa'
 import { useState, useEffect, useRef } from 'react'
 import { API_ENDPOINTS } from '../config/api'

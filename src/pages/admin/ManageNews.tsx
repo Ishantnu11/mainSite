@@ -6,14 +6,7 @@ import {
   HStack,
   Heading,
   Button,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
   IconButton,
-  useDisclosure,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -27,7 +20,6 @@ import {
   Select,
   useToast,
   Image,
-  Tag,
   Text,
   Grid,
   GridItem,
@@ -39,6 +31,8 @@ import {
   Flex,
   Tooltip,
   useColorModeValue,
+  ModalCloseButton,
+  SimpleGrid,
 } from '@chakra-ui/react';
 import { AddIcon, EditIcon, DeleteIcon, CalendarIcon } from '@chakra-ui/icons';
 import { API_ENDPOINTS } from '../../config/api';

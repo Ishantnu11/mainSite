@@ -10,12 +10,10 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
-  Tag,
   Image,
   Button,
   Avatar,
-  Flex,
-  useColorModeValue,
+  Stack,
   Card,
   CardBody,
   Badge,
@@ -28,9 +26,8 @@ import {
   ModalBody,
   ModalCloseButton,
   useDisclosure,
-  IconButton,
 } from '@chakra-ui/react';
-import { SearchIcon, ExternalLinkIcon } from '@chakra-ui/icons';
+import { SearchIcon } from '@chakra-ui/icons';
 import { API_ENDPOINTS } from '../config/api';
 
 interface NewsArticle {
@@ -249,10 +246,10 @@ const News = () => {
       setArticles(data);
     } catch (error) {
       console.error('Error fetching articles:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
   const filterNews = () => {
     return articles.filter((item) => {
@@ -320,7 +317,7 @@ const News = () => {
                 placeholder="Search updates..."
                 bg="gray.800"
                 border="1px solid"
-                borderColor="gray.700"
+                  borderColor="gray.700"
                 _hover={{
                   borderColor: 'blue.400',
                   bg: 'gray.750'
@@ -387,8 +384,8 @@ const News = () => {
                   {category.label}
                 </Button>
               ))}
-            </HStack>
-          </VStack>
+                    </HStack>
+                  </VStack>
 
           {isLoading ? (
             <Text textAlign="center">Loading articles...</Text>

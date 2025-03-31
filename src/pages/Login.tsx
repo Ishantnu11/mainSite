@@ -12,10 +12,10 @@ import {
   useToast,
   InputGroup,
   InputRightElement,
-  Icon,
-  Flex,
-  Image,
-  IconButton,
+  Checkbox,
+  Link,
+  HStack,
+  Image
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';

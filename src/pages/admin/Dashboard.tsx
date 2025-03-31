@@ -32,7 +32,6 @@ import {
   Tooltip,
 } from '@chakra-ui/react';
 import { API_ENDPOINTS } from '../../config/api';
-import { useNavigate } from 'react-router-dom';
 import { EditIcon, DeleteIcon, CalendarIcon, EmailIcon } from '@chakra-ui/icons';
 import { FaLinkedin, FaTwitter, FaGithub } from 'react-icons/fa';
 
@@ -100,7 +99,6 @@ interface NewsItem {
 }
 
 const Dashboard = () => {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
