@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // Define user roles
 export type UserRole = 'admin' | 'data-manager' | 'viewer';
@@ -27,50 +27,69 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    // Initialize user from localStorage if available
+    const savedUser = localStorage.getItem('gdg_user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isDataManager, setIsDataManager] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(() => {
+    // Initialize admin state from localStorage
+    const savedUser = localStorage.getItem('gdg_user');
+    return savedUser ? JSON.parse(savedUser).role === 'admin' : false;
+  });
+  const [isDataManager, setIsDataManager] = useState(() => {
+    // Initialize data manager state from localStorage
+    const savedUser = localStorage.getItem('gdg_user');
+    return savedUser ? ['admin', 'data-manager'].includes(JSON.parse(savedUser).role) : false;
+  });
 
   // Initialize with loading state
-  useState(() => {
+  useEffect(() => {
     setLoading(false);
-  });
+  }, []);
 
   const login = async (email: string, password: string) => {
     try {
       setLoading(true);
+      let userData: User | null = null;
+
       // Simple hardcoded authentication
       if (email === 'admin@gdg.com' && password === 'admin123') {
-        setUser({
+        userData = {
           uid: 'admin-user-id',
           email,
           name: 'Admin User',
           role: 'admin'
-        });
-        setIsAdmin(true);
-        setIsDataManager(true);
+        };
       } else if (email === 'manager@gdg.com' && password === 'manager123') {
-        setUser({
+        userData = {
           uid: 'manager-user-id',
           email,
           name: 'Data Manager',
           role: 'data-manager'
-        });
-        setIsAdmin(false);
-        setIsDataManager(true);
+        };
       } else if (email === 'viewer@gdg.com' && password === 'viewer123') {
-        setUser({
+        userData = {
           uid: 'viewer-user-id',
           email,
           name: 'Viewer User',
           role: 'viewer'
-        });
-        setIsAdmin(false);
-        setIsDataManager(false);
-      } else {
+        };
+      }
+
+      if (!userData) {
         throw new Error('Invalid credentials');
       }
+
+      // Save user data to localStorage
+      localStorage.setItem('gdg_user', JSON.stringify(userData));
+      
+      // Update state
+      setUser(userData);
+      setIsAdmin(userData.role === 'admin');
+      setIsDataManager(['admin', 'data-manager'].includes(userData.role));
+      
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -80,6 +99,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = async () => {
     try {
+      // Clear localStorage
+      localStorage.removeItem('gdg_user');
+      
+      // Clear state
       setUser(null);
       setIsAdmin(false);
       setIsDataManager(false);
@@ -109,7 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
