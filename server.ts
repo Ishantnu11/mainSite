@@ -1,10 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { connectToDatabase } from './lib/mongodb';
-import eventsRouter from './api/events';
-import newsRouter from './api/news';
-import teamRouter from './api/team';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -30,51 +27,51 @@ app.use(cors({
 
 app.use(express.json());
 
-// Connect to MongoDB
-connectToDatabase()
-  .then(() => {
-    console.log('Connected to MongoDB successfully');
+// Setup proxy to Render backend
+const RENDER_API_URL = 'https://gdggug-backend.onrender.com';
 
-    // API Routes
-    app.use('/api/events', eventsRouter);
-    app.use('/api/news', newsRouter);
-    app.use('/api/team', teamRouter);
+// Proxy all API requests to the Render backend
+app.use('/api', createProxyMiddleware({
+  target: RENDER_API_URL,
+  changeOrigin: true,
+  pathRewrite: {
+    '^/api': '/api' // Keep the /api prefix
+  },
+  onProxyReq: (proxyReq, req, res) => {
+    console.log(`Proxying request to: ${RENDER_API_URL}${req.url}`);
+  },
+  onError: (err, req, res) => {
+    console.error('Proxy error:', err);
+    res.status(500).json({ error: 'Proxy error', message: err.message });
+  }
+}));
 
-    // Health check endpoint
-    app.get('/api/health', (req, res) => {
-      res.json({ status: 'ok', timestamp: new Date().toISOString() });
-    });
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
-    // Serve static files in production
-    if (process.env.NODE_ENV === 'production') {
-      // Serve static files from the dist directory
-      app.use(express.static('dist'));
-      
-      // For any request that doesn't match an API route or static file, serve index.html
-      app.get('*', (req, res) => {
-        if (!req.path.startsWith('/api/')) {
-          res.sendFile('index.html', { root: 'dist' });
-        }
-      });
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files from the dist directory
+  app.use(express.static('dist'));
+  
+  // For any request that doesn't match an API route or static file, serve index.html
+  app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api/')) {
+      res.sendFile('index.html', { root: 'dist' });
     }
-
-    // Start server after successful MongoDB connection
-    app.listen(port, () => {
-      console.log(`Server is running on port ${port} in ${process.env.NODE_ENV || 'development'} mode`);
-      console.log('Available API endpoints:');
-      console.log('- GET /api/events');
-      console.log('- GET /api/news');
-      console.log('- GET /api/team');
-      console.log('- GET /api/health');
-    });
-  })
-  .catch((error) => {
-    console.error('Failed to connect to MongoDB:', error);
-    console.log('Tips for troubleshooting:');
-    console.log('1. Check if MONGODB_URI is correctly set in your environment');
-    console.log('2. Ensure your IP is whitelisted in MongoDB Atlas');
-    console.log('3. Verify the database user has correct permissions');
-    process.exit(1);
   });
+}
+
+// Start server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port} in ${process.env.NODE_ENV || 'development'} mode`);
+  console.log('Available API endpoints:');
+  console.log('- GET /api/events (proxied to Render backend)');
+  console.log('- GET /api/news (proxied to Render backend)');
+  console.log('- GET /api/team (proxied to Render backend)');
+  console.log('- GET /health (local health check)');
+});
 
 export default app;
