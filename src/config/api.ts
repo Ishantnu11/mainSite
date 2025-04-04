@@ -1,9 +1,9 @@
 // Define API base URL
-const LOCAL_API_URL = 'http://localhost:3001';
+const VPS_API_URL = 'http://69.62.107.249:3001';
 
 // Get the base URL for API calls
 export const getBaseUrl = () => {
-  return LOCAL_API_URL;
+  return VPS_API_URL;
 };
 
 // Create API endpoints with the given base URL
