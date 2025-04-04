@@ -19,6 +19,7 @@ import { motion } from 'framer-motion';
 import { API_ENDPOINTS } from '../config/api';
 import EventCard from '../components/EventCard';
 import { useEvents } from '../hooks/useEvents';
+import { Event } from '../types/event';
 
 type EventFilter = 'upcoming' | 'ongoing' | 'past';
 

@@ -11,19 +11,8 @@ import {
 } from '@chakra-ui/react';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { FaCalendar, FaClock, FaMapMarkerAlt } from 'react-icons/fa';
-import { getAssetPath } from '../config/api';
 import { format } from 'date-fns';
-
-interface Event {
-  _id: string;
-  title: string;
-  date: string;
-  description: string;
-  image: string;
-  link?: string;
-  location?: string;
-  status: 'upcoming' | 'ongoing' | 'past';
-}
+import { Event } from '../types/event';
 
 interface EventCardProps {
   event: Event;

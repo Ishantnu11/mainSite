@@ -1,15 +1,6 @@
 import { useState, useEffect } from 'react';
 import { API_ENDPOINTS, apiRequest } from '../config/api';
-
-interface Event {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  image?: string;
-  location?: string;
-  status: 'upcoming' | 'ongoing' | 'past';
-}
+import { Event } from '../types/event';
 
 export const useEvents = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -26,7 +17,14 @@ export const useEvents = () => {
           throw new Error('Invalid response format');
         }
 
-        setEvents(data);
+        // Map the data to ensure both id and _id are available
+        const mappedEvents = data.map(event => ({
+          ...event,
+          _id: event._id || event.id, // Use _id if available, fallback to id
+          id: event.id || event._id, // Ensure id is also available
+        }));
+
+        setEvents(mappedEvents);
         setError(null);
       } catch (err) {
         console.error('Error fetching events:', err);
