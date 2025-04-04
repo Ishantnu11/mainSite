@@ -1,175 +1,179 @@
 import {
   Box,
-  Container,
   Flex,
   HStack,
-  Link as ChakraLink,
-  Button,
   IconButton,
+  Button,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
   useDisclosure,
-  VStack,
+  useColorModeValue,
+  Stack,
   Image,
-} from '@chakra-ui/react'
-import { Link as RouterLink } from 'react-router-dom'
-import { HamburgerIcon, CloseIcon } from '@chakra-ui/icons'
-import { useAuth } from '../contexts/AuthContext'
+  CloseButton,
+  VStack,
+} from '@chakra-ui/react';
+import { HamburgerIcon } from '@chakra-ui/icons';
+import { Link as RouterLink } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
-const Navbar = () => {
-  const { isOpen, onToggle } = useDisclosure()
-  const { isAdmin } = useAuth()
+const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) => (
+  <RouterLink to={to}>
+    <Button
+      variant="ghost"
+      color="neutral.700"
+      _hover={{
+        bg: 'neutral.50',
+        color: 'neutral.900',
+      }}
+      _active={{
+        bg: 'neutral.100',
+      }}
+    >
+      {children}
+    </Button>
+  </RouterLink>
+);
 
-  const navItems = [
-    { name: 'Events', path: '/events' },
-    { name: 'News', path: '/news' },
-    { name: 'Team', path: '/team' },
-    { name: 'TPO', path: '/tpo' },
-  ]
-
-  if (isAdmin) {
-    navItems.push({ name: 'Admin', path: '/admin' })
-  }
+export default function Navbar() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { user, logout } = useAuth();
+  const bg = useColorModeValue('white', 'white');
+  const borderColor = useColorModeValue('neutral.200', 'neutral.200');
 
   return (
-    <Box 
-      as="nav"
-      position="fixed"
+    <Box
+      bg={bg}
+      px={4}
+      py={4}
+      borderBottom="1px"
+      borderColor={borderColor}
+      position="sticky"
       top={0}
-      left={0}
-      right={0}
-      zIndex={1000}
-      bg="rgba(0, 0, 0, 0.8)"
-      backdropFilter="blur(10px)"
-      borderBottom="1px solid"
-      borderColor="whiteAlpha.200"
+      zIndex={10}
+      boxShadow="sm"
     >
-      <Container maxW="container.xl" py={4}>
-        <Flex justify="space-between" align="center">
-          <ChakraLink as={RouterLink} to="/" _hover={{ textDecoration: 'none' }}>
-            <HStack spacing={3}>
-              <Box
-                w="40px"
-                h="40px"
-                borderRadius="full"
-                overflow="hidden"
-                border="2px solid"
-                borderColor="white"
-                transition="all 0.3s ease"
-                _hover={{
-                  borderColor: 'blue.400',
-                  transform: 'scale(1.05)',
-                }}
-              >
-                <Image
-                  src="https://i.imghippo.com/files/fbGE8705GLI.png"
-                  alt="GDG Logo"
-                  w="100%"
-                  h="100%"
-                  objectFit="cover"
-                  loading="eager"
-                />
-              </Box>
-              <Box
-                fontSize="xl"
-                fontWeight="bold"
-                bgGradient="linear(to-r, blue.400, purple.500)"
-                bgClip="text"
-              >
-                GDG Gurugram
-              </Box>
-            </HStack>
-          </ChakraLink>
-
-          {/* Desktop Navigation */}
-          <HStack spacing={8} display={{ base: 'none', md: 'flex' }}>
-            {navItems.map((item) => (
-              <ChakraLink
-                key={item.path}
-                as={RouterLink}
-                to={item.path}
-                fontSize="md"
-                fontWeight="bold"
-                color="white"
-                _hover={{
-                  color: 'white',
-                  transform: 'translateY(-1px)',
-                  textShadow: '0 0 8px rgba(255, 255, 255, 0.5)'
-                }}
-                transition="all 0.2s"
-              >
-                {item.name}
-              </ChakraLink>
-            ))}
-            <Button
-              as={RouterLink}
-              to="/login"
-              variant="outline"
-              colorScheme="blue"
-              size="sm"
-              _hover={{
-                bg: 'whiteAlpha.200',
-                transform: 'translateY(-2px)',
-              }}
-            >
-              Login
-            </Button>
+      <Flex h={16} alignItems="center" justifyContent="space-between" maxW="1400px" mx="auto">
+        <IconButton
+          size="md"
+          icon={<HamburgerIcon />}
+          aria-label="Open Menu"
+          display={{ base: 'flex', md: 'none' }}
+          onClick={onOpen}
+          variant="ghost"
+          color="neutral.700"
+        />
+        <HStack spacing={8} alignItems="center">
+          <RouterLink to="/">
+            <Image
+              src="/images/t2k7QK3r_400x400.png"
+              alt="GDG GUG Logo"
+              h="40px"
+              w="40px"
+              objectFit="contain"
+            />
+          </RouterLink>
+          <HStack as="nav" spacing={4} display={{ base: 'none', md: 'flex' }}>
+            <NavLink to="/">Home</NavLink>
+            <NavLink to="/events">Events</NavLink>
+            <NavLink to="/team">Team</NavLink>
+            <NavLink to="/news">News</NavLink>
+            <NavLink to="/tpo">TPO</NavLink>
           </HStack>
-
-          {/* Mobile Navigation Toggle */}
-          <IconButton
-            display={{ base: 'flex', md: 'none' }}
-            onClick={onToggle}
-            icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
-            variant="ghost"
-            aria-label="Toggle Navigation"
-            color="white"
-            _hover={{ bg: 'whiteAlpha.200' }}
-          />
-        </Flex>
-
-        {/* Mobile Navigation Menu */}
-        {isOpen && (
-          <VStack
-            display={{ base: 'flex', md: 'none' }}
-            py={4}
-            spacing={4}
-            align="stretch"
-          >
-            {navItems.map((item) => (
-              <ChakraLink
-                key={item.path}
-                as={RouterLink}
-                to={item.path}
-                fontSize="lg"
-                fontWeight="bold"
-                color="white"
-                onClick={onToggle}
-                _hover={{ 
-                  color: 'white',
-                  textShadow: '0 0 8px rgba(255, 255, 255, 0.5)'
-                }}
-                transition="all 0.2s"
-              >
-                {item.name}
-              </ChakraLink>
-            ))}
+        </HStack>
+        <Flex alignItems="center">
+          {user ? (
+            <Button
+              variant="outline"
+              colorScheme="primary"
+              onClick={logout}
+              _hover={{
+                bg: 'primary.50',
+                color: 'primary.700',
+              }}
+            >
+              Logout
+            </Button>
+          ) : (
             <Button
               as={RouterLink}
               to="/login"
-              variant="outline"
-              colorScheme="blue"
-              w="full"
+              colorScheme="primary"
               _hover={{
-                bg: 'whiteAlpha.200',
-                transform: 'translateY(-2px)',
+                bg: 'primary.600',
+                transform: 'translateY(-1px)',
+                boxShadow: 'sm',
               }}
             >
               Login
             </Button>
-          </VStack>
-        )}
-      </Container>
-    </Box>
-  )
-}
+          )}
+        </Flex>
+      </Flex>
 
-export default Navbar 
+      {isOpen ? (
+        <Box
+          pb={4}
+          display={{ md: 'none' }}
+          position="fixed"
+          top={0}
+          left={0}
+          right={0}
+          bottom={0}
+          bg="white"
+          zIndex={20}
+        >
+          <Flex h={16} alignItems="center" justifyContent="space-between" px={4}>
+            <RouterLink to="/">
+              <Image
+                src="/images/t2k7QK3r_400x400.png"
+                alt="GDG GUG Logo"
+                h="40px"
+                w="40px"
+                objectFit="contain"
+              />
+            </RouterLink>
+            <CloseButton onClick={onClose} color="neutral.700" />
+          </Flex>
+          <VStack spacing={4} px={4}>
+            <NavLink to="/">Home</NavLink>
+            <NavLink to="/events">Events</NavLink>
+            <NavLink to="/team">Team</NavLink>
+            <NavLink to="/news">News</NavLink>
+            <NavLink to="/tpo">TPO</NavLink>
+            {user ? (
+              <Button
+                variant="outline"
+                colorScheme="primary"
+                onClick={logout}
+                w="full"
+                _hover={{
+                  bg: 'primary.50',
+                  color: 'primary.700',
+                }}
+              >
+                Logout
+              </Button>
+            ) : (
+              <Button
+                as={RouterLink}
+                to="/login"
+                colorScheme="primary"
+                w="full"
+                _hover={{
+                  bg: 'primary.600',
+                  transform: 'translateY(-1px)',
+                  boxShadow: 'sm',
+                }}
+              >
+                Login
+              </Button>
+            )}
+          </VStack>
+        </Box>
+      ) : null}
+    </Box>
+  );
+} 

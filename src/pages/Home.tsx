@@ -8,6 +8,10 @@ import {
   VStack,
   Image,
   Icon,
+  Flex,
+  Card,
+  CardBody,
+  Stack,
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -15,204 +19,231 @@ import {
   FaMicrophone, 
   FaNetworkWired, 
   FaLightbulb, 
-  FaPuzzlePiece 
+  FaPuzzlePiece,
+  FaArrowRight 
 } from 'react-icons/fa';
 
 const MotionBox = motion(Box);
+const MotionFlex = motion(Flex);
 
 const Home = () => {
   const navigate = useNavigate();
-  
-  const floatAnimation = {
-    y: [-10, 0, -10],
-    transition: {
-      duration: 6,
-      repeat: Infinity,
-      ease: "easeInOut"
-    }
-  };
 
   return (
-    <Box position="relative">
+    <Box bg="white">
       {/* Hero Section */}
-      <Container maxW="container.xl" pt={{ base: 20, md: 32 }} pb={{ base: 16, md: 24 }}>
-        <Box 
-          display="flex" 
-          flexDirection={{ base: 'column', lg: 'row' }}
-          alignItems="center"
-          justifyContent="space-between"
-          gap={{ base: 8, lg: 12 }}
+      <Container maxW="1400px" pt={{ base: 8, md: 16 }} pb={{ base: 16, md: 24 }}>
+        <Flex 
+          direction={{ base: 'column', lg: 'row' }}
+          align="center"
+          justify="space-between"
+          gap={{ base: 8, lg: 16 }}
         >
-          <VStack 
-            align="flex-start" 
-            spacing={6} 
+          <MotionBox
             flex="1"
-            maxW={{ base: 'full', lg: '600px' }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            <MotionBox
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
+            <Stack spacing={6} maxW="600px">
               <Heading 
                 as="h1" 
-                size="2xl"
-                bgGradient="linear(to-r, white, gray.400)"
-                bgClip="text"
+                fontSize={{ base: '3xl', md: '4xl', lg: '5xl' }}
+                fontWeight="700"
+                color="neutral.900"
                 lineHeight="1.2"
-                mb={4}
-                filter="drop-shadow(0 0 8px rgba(255, 255, 255, 0.3))"
               >
-                Welcome to GDG Gurugram University
+                Welcome to{' '}
+                <Text as="span" color="primary.600">
+                  GDG Gurugram University
+                </Text>
               </Heading>
-            </MotionBox>
-
-            <MotionBox
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <Text fontSize="xl" color="gray.400" maxW="xl">
-                Join a global community of developers, connect with Google Developer Experts, 
-                and learn about Google technologies.
+              <Text fontSize={{ base: 'lg', md: 'xl' }} color="neutral.700">
+                Join our vibrant community of developers, connect with Google Developer Experts, 
+                and explore the latest in technology.
               </Text>
-            </MotionBox>
-
-            <MotionBox
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-            >
-              <Button
-                size="lg"
-                onClick={() => navigate('/events')}
-                bg="white"
-                color="black"
-                _hover={{
-                  transform: 'translateY(-2px)',
-                  boxShadow: 'xl',
-                  bg: 'gray.100'
-                }}
-                px={8}
-              >
-                View Events
-              </Button>
-            </MotionBox>
-          </VStack>
+              <Flex gap={4} pt={4}>
+                <Button
+                  size="lg"
+                  colorScheme="primary"
+                  rightIcon={<FaArrowRight />}
+                  onClick={() => navigate('/events')}
+                  _hover={{
+                    transform: 'translateY(-2px)',
+                    boxShadow: 'lg',
+                  }}
+                >
+                  Explore Events
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  colorScheme="primary"
+                  onClick={() => navigate('/team')}
+                  _hover={{
+                    transform: 'translateY(-2px)',
+                    boxShadow: 'sm',
+                  }}
+                >
+                  Meet the Team
+                </Button>
+              </Flex>
+            </Stack>
+          </MotionBox>
 
           <MotionBox 
             flex="1"
-            maxW={{ base: 'full', lg: '600px' }}
-            animate={floatAnimation}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <Box
-              position="relative"
-              width="100%"
-              height="100%"
-            >
-              <Image
-                src="https://i.imghippo.com/files/Zkbh2677Hwk.png"
-                alt="Google for Developers"
-                w={{ base: "350px", md: "450px", lg: "600px" }}
-                h="auto"
-                objectFit="contain"
-                borderRadius="2xl"
-                loading="eager"
-                onError={(e) => {
-                  console.error('Image failed to load:', e);
-                }}
-                sx={{
-                  filter: "drop-shadow(0 0 20px rgba(0, 112, 243, 0.2))",
-                  transition: "transform 0.3s ease-in-out",
-                  "&:hover": {
-                    transform: "scale(1.02)"
-                  }
-                }}
-              />
-            </Box>
+            <Image
+              src="/images/HEROiMAGE.png"
+              alt="GDG Community"
+              w="full"
+              h="auto"
+              maxH="500px"
+              objectFit="contain"
+            />
           </MotionBox>
-        </Box>
+        </Flex>
       </Container>
 
-      {/* Features Grid */}
-      <Box 
-        bg="rgba(17, 17, 17, 0.8)" 
-        py={{ base: 16, md: 24 }}
-        backdropFilter="blur(20px)"
-        borderTop="1px solid"
-        borderColor="gray.800"
-      >
-        <Container maxW="container.xl">
-          <SimpleGrid 
-            columns={{ base: 1, md: 2 }} 
-            spacing={{ base: 8, lg: 12 }}
+      {/* Features Section */}
+      <Box bg="neutral.50" py={{ base: 16, md: 24 }}>
+        <Container maxW="1400px">
+          <VStack spacing={12}>
+            <VStack spacing={4} textAlign="center" maxW="800px">
+              <Heading
+                fontSize={{ base: '2xl', md: '3xl' }}
+                color="neutral.900"
+              >
+                What We Offer
+              </Heading>
+              <Text fontSize={{ base: 'lg', md: 'xl' }} color="neutral.700">
+                Join our community and get access to exclusive events, workshops, and networking opportunities.
+              </Text>
+            </VStack>
+
+            <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={8} w="full">
+              {[
+                {
+                  icon: FaMicrophone,
+                  title: 'Tech Talks',
+                  description: 'Learn from industry experts and Google Developer Experts.',
+                  color: 'primary.500'
+                },
+                {
+                  icon: FaNetworkWired,
+                  title: 'Networking',
+                  description: 'Connect with like-minded developers and tech enthusiasts.',
+                  color: 'red.500'
+                },
+                {
+                  icon: FaLightbulb,
+                  title: 'Workshops',
+                  description: 'Hands-on sessions to learn and practice new technologies.',
+                  color: 'yellow.600'
+                },
+                {
+                  icon: FaPuzzlePiece,
+                  title: 'Hackathons',
+                  description: 'Collaborate and build innovative solutions together.',
+                  color: 'green.500'
+                }
+              ].map((feature, index) => (
+                <MotionBox
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <Card
+                    bg="white"
+                    h="full"
+                    _hover={{
+                      transform: 'translateY(-4px)',
+                      boxShadow: 'lg',
+                    }}
+                    transition="all 0.2s"
+                  >
+                    <CardBody p={6}>
+                      <VStack spacing={4} align="flex-start">
+                        <Flex
+                          w={12}
+                          h={12}
+                          bg={`${feature.color}15`}
+                          color={feature.color}
+                          rounded="lg"
+                          align="center"
+                          justify="center"
+                        >
+                          <Icon as={feature.icon} boxSize={6} />
+                        </Flex>
+                        <Heading size="md" color="neutral.900">
+                          {feature.title}
+                        </Heading>
+                        <Text color="neutral.700">
+                          {feature.description}
+                        </Text>
+                      </VStack>
+                    </CardBody>
+                  </Card>
+                </MotionBox>
+              ))}
+            </SimpleGrid>
+          </VStack>
+        </Container>
+      </Box>
+
+      {/* CTA Section */}
+      <Box py={{ base: 16, md: 24 }}>
+        <Container maxW="1400px">
+          <Card
+            bg="primary.50"
+            border="1px solid"
+            borderColor="primary.100"
+            overflow="hidden"
           >
-            <FeatureCard
-              icon={FaMicrophone}
-              title="Workshops & Tech Talks"
-              description="Regular workshops and tech talks on the latest Google technologies and development practices."
-            />
-            <FeatureCard
-              icon={FaNetworkWired}
-              title="Network & Connect"
-              description="Connect with fellow developers, share knowledge, and grow your professional network."
-            />
-            <FeatureCard
-              icon={FaLightbulb}
-              title="Learn & Grow"
-              description="Access resources and learning materials to enhance your development skills."
-            />
-            <FeatureCard
-              icon={FaPuzzlePiece}
-              title="Community Events"
-              description="Participate in hackathons, coding competitions, and other community events."
-            />
-          </SimpleGrid>
+            <CardBody p={{ base: 8, md: 12 }}>
+              <SimpleGrid columns={{ base: 1, md: 2 }} gap={8} alignItems="center">
+                <VStack align="flex-start" spacing={6}>
+                  <Heading color="neutral.900" size="lg">
+                    Ready to Join Our Community?
+                  </Heading>
+                  <Text color="neutral.700" fontSize="lg">
+                    Get involved with GDG Gurugram University and be part of an amazing tech community.
+                  </Text>
+                  <Button
+                    size="lg"
+                    colorScheme="primary"
+                    rightIcon={<FaArrowRight />}
+                    onClick={() => navigate('/events')}
+                    _hover={{
+                      transform: 'translateY(-2px)',
+                      boxShadow: 'lg',
+                    }}
+                  >
+                    Join Upcoming Events
+                  </Button>
+                </VStack>
+                <Box>
+                  <Image
+                    src="/images/t2k7QK3r_400x400.png"
+                    alt="GDG Community"
+                    w="full"
+                    h="auto"
+                    maxH="300px"
+                    objectFit="contain"
+                  />
+                </Box>
+              </SimpleGrid>
+            </CardBody>
+          </Card>
         </Container>
       </Box>
     </Box>
   );
 };
-
-const FeatureCard = ({ icon, title, description }: { icon: any; title: string; description: string }) => (
-  <MotionBox
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5 }}
-    p={8}
-    bg="rgba(26, 32, 44, 0.7)"
-    borderRadius="xl"
-    borderWidth="1px"
-    borderColor="gray.700"
-    backdropFilter="blur(12px)"
-    sx={{
-      transition: "all 0.3s",
-      "&:hover": {
-        transform: "translateY(-4px)",
-        boxShadow: "xl",
-        borderColor: "gray.600"
-      }
-    }}
-  >
-    <VStack align="flex-start" spacing={4}>
-      <Icon
-        as={icon}
-        boxSize={8}
-        color="blue.400"
-        filter="drop-shadow(0 0 8px rgba(66, 133, 244, 0.5))"
-      />
-      <Heading 
-        size="md" 
-        color="white"
-        filter="drop-shadow(0 0 4px rgba(255, 255, 255, 0.2))"
-      >
-        {title}
-      </Heading>
-      <Text color="gray.400">
-        {description}
-      </Text>
-    </VStack>
-  </MotionBox>
-);
 
 export default Home;

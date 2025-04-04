@@ -17,43 +17,31 @@ function App() {
         <Box 
           minH="100vh" 
           w="100vw" 
-          bg="black" 
-          color="white"
+          bg="white" 
+          color="google.gray.900"
           overflowX="hidden"
           position="relative"
         >
-          {/* Background gradient effects */}
+          {/* Subtle gradient backgrounds */}
           <Box
             position="fixed"
-            top="0"
-            right="0"
-            width="100%"
-            height="100%"
-            background="radial-gradient(circle at top right, rgba(255, 0, 128, 0.1), transparent 50%)"
-            filter="blur(100px)"
+            top="-10%"
+            right="-10%"
+            width="50%"
+            height="50%"
+            background="radial-gradient(circle at center, rgba(66, 133, 244, 0.08), transparent 70%)"
+            filter="blur(60px)"
             zIndex={0}
             pointerEvents="none"
           />
           <Box
             position="fixed"
-            bottom="0"
-            left="0"
-            width="100%"
-            height="100%"
-            background="radial-gradient(circle at bottom left, rgba(0, 112, 243, 0.1), transparent 50%)"
-            filter="blur(100px)"
-            zIndex={0}
-            pointerEvents="none"
-          />
-          <Box
-            position="fixed"
-            top="50%"
-            left="50%"
-            transform="translate(-50%, -50%)"
-            width="100%"
-            height="100%"
-            background="radial-gradient(circle at center, rgba(80, 227, 194, 0.05), transparent 60%)"
-            filter="blur(100px)"
+            bottom="-10%"
+            left="-10%"
+            width="50%"
+            height="50%"
+            background="radial-gradient(circle at center, rgba(52, 168, 83, 0.08), transparent 70%)"
+            filter="blur(60px)"
             zIndex={0}
             pointerEvents="none"
           />
@@ -65,10 +53,8 @@ function App() {
               as="main" 
               flex="1"
               w="100%"
-              maxW="1400px"
+              maxW="100vw"
               mx="auto"
-              px={{ base: 4, md: 8 }}
-              py={{ base: 6, md: 12 }}
             >
               <Routes>
                 <Route path="/" element={<Home />} />

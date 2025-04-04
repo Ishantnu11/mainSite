@@ -4,377 +4,194 @@ import {
   Container,
   Heading,
   Text,
-  SimpleGrid,
+  ButtonGroup,
+  Button,
   VStack,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
+  SimpleGrid,
+  Card,
+  CardBody,
   Skeleton,
-  useToast,
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
 import { API_ENDPOINTS, FALLBACK_API_ENDPOINTS, fetchWithFallback } from '../config/api';
 import EventCard from '../components/EventCard';
+import { useEvents } from '../hooks/useEvents';
 
-interface Event {
-  _id: string;
-  title: string;
-  date: string;
-  description: string;
-  image: string;
-  link?: string;
-  status: 'upcoming' | 'ongoing' | 'past';
-}
+type EventFilter = 'upcoming' | 'ongoing' | 'past';
 
 const MotionBox = motion(Box);
 
 const Events = () => {
-  const [events, setEvents] = useState<Event[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [tabIndex, setTabIndex] = useState(0);
-  const [page, setPage] = useState([0, 0]);
-  // Direction is used in the slideVariants function
-  const [direction, setDirection] = useState(0);
-  const toast = useToast();
-
-  useEffect(() => {
-    const fetchEvents = async () => {
-      console.log('🔄 Starting to fetch events...');
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetchWithFallback(
-          API_ENDPOINTS.events,
-          FALLBACK_API_ENDPOINTS.events
-        );
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('✅ Successfully fetched events:', data);
-        
-        if (!Array.isArray(data)) {
-          throw new Error('Invalid data format: expected an array of events');
-        }
-        
-        setEvents(data);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch events';
-        console.error('❌ Error fetching events:', errorMessage);
-        setError(errorMessage);
-        setEvents([]); // Set empty array on error
-        toast({
-          title: 'Error fetching events',
-          description: errorMessage,
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchEvents();
-  }, [toast]);
-
-  const filterEvents = (status: Event['status']) => {
-    if (!Array.isArray(events)) {
-      console.error('Events is not an array:', events);
-      return [];
-    }
-    return events.filter(event => event.status === status);
-  };
-
-  const slideVariants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 1000 : -1000,
-      opacity: 0
-    }),
-    center: {
-      zIndex: 1,
-      x: 0,
-      opacity: 1
-    },
-    exit: (direction: number) => ({
-      zIndex: 0,
-      x: direction < 0 ? 1000 : -1000,
-      opacity: 0
-    })
-  };
+  const [filter, setFilter] = useState<EventFilter>('upcoming');
+  const { events, isLoading, error } = useEvents();
 
   return (
-    <Box
-      minH="100vh"
-      pt={20}
-      position="relative"
-      bg="black"
-      overflow="hidden"
-    >
-      {/* Background Effects */}
-      <Box
-        position="absolute"
-        top="5%"
-        left="20%"
-        width="600px"
-        height="600px"
-        background="radial-gradient(circle, rgba(25, 118, 210, 0.1) 0%, transparent 70%)"
-        filter="blur(40px)"
-        zIndex={0}
-      />
-      <Box
-        position="absolute"
-        top="40%"
-        right="10%"
-        width="500px"
-        height="500px"
-        background="radial-gradient(circle, rgba(156, 39, 176, 0.1) 0%, transparent 70%)"
-        filter="blur(40px)"
-        zIndex={0}
-      />
-
-      <Container maxW="container.xl" position="relative" zIndex={1}>
+    <Box bg="neutral.50" minH="100vh">
+      <Container maxW="7xl" py={{ base: 8, md: 16 }}>
         <VStack spacing={8} align="stretch">
-          <Box textAlign="center" mb={8}>
+          {/* Header */}
+          <VStack spacing={4} textAlign="center">
             <Heading
-              as={motion.h1}
-              size="2xl"
-              bgGradient="linear(to-r, blue.400, purple.500)"
-              bgClip="text"
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: '0.5s' }}
+              fontSize={{ base: '3xl', md: '4xl' }}
+              color="neutral.900"
+              fontFamily="Google Sans Display"
+              fontWeight="medium"
             >
               Community Events
             </Heading>
-            <Text
-              as={motion.p}
-              fontSize="xl"
-              color="gray.400"
-              mt={4}
-              maxW="2xl"
-              mx="auto"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: '0.3s' }}
+            <Text 
+              fontSize={{ base: 'lg', md: 'xl' }} 
+              color="neutral.700"
+              maxW="800px"
+              fontFamily="Google Sans Text"
             >
-              Join us for exciting tech events, workshops, and meetups. Connect with fellow
-              developers and grow together.
+              Join us for exciting tech events, workshops, and meetups. Connect with
+              fellow developers and grow together.
             </Text>
-          </Box>
+          </VStack>
 
-          <Tabs 
-            variant="soft-rounded" 
-            colorScheme="blue" 
-            index={tabIndex}
-            onChange={(index) => {
-              const newDirection = index > tabIndex ? 1 : -1;
-              setPage([page[0] + newDirection, newDirection]);
-              setDirection(newDirection);
-              setTabIndex(index);
-            }}
-            isLazy
-          >
-            <TabList 
-              justifyContent="center" 
-              bg="whiteAlpha.100"
-              p={2}
-              borderRadius="full"
-              mx="auto"
-              maxW="fit-content"
-              display="flex"
-              gap={4}
+          {/* Filters */}
+          <ButtonGroup spacing={4} alignSelf="center">
+            <Button
+              variant={filter === 'upcoming' ? 'solid' : 'ghost'}
+              onClick={() => setFilter('upcoming')}
+              size="lg"
+              colorScheme={filter === 'upcoming' ? 'primary' : undefined}
             >
-              <Tab
-                _selected={{
-                  bg: "blue.400",
-                  color: "white",
-                  transform: "scale(1.05)",
-                }}
-                transition="all 0.3s"
-                fontWeight="medium"
-              >
-                Upcoming
-              </Tab>
-              <Tab
-                _selected={{
-                  bg: "green.400",
-                  color: "white",
-                  transform: "scale(1.05)",
-                }}
-                transition="all 0.3s"
-                fontWeight="medium"
-              >
-                Ongoing
-              </Tab>
-              <Tab
-                _selected={{
-                  bg: "purple.400",
-                  color: "white",
-                  transform: "scale(1.05)",
-                }}
-                transition="all 0.3s"
-                fontWeight="medium"
-              >
-                Past
-              </Tab>
-            </TabList>
+              Upcoming
+            </Button>
+            <Button
+              variant={filter === 'ongoing' ? 'solid' : 'ghost'}
+              onClick={() => setFilter('ongoing')}
+              size="lg"
+              colorScheme={filter === 'ongoing' ? 'primary' : undefined}
+            >
+              Ongoing
+            </Button>
+            <Button
+              variant={filter === 'past' ? 'solid' : 'ghost'}
+              onClick={() => setFilter('past')}
+              size="lg"
+              colorScheme={filter === 'past' ? 'primary' : undefined}
+            >
+              Past
+            </Button>
+          </ButtonGroup>
 
-            <TabPanels>
-              <TabPanel padding={0}>
-                <MotionBox
-                  key="upcoming"
-                  custom={direction}
-                  variants={slideVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  px={4}
-                  py={8}
-                >
-                  {isLoading ? (
-                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-                      {[1, 2, 3].map((i) => (
-                        <Box
-                          key={i}
-                          borderRadius="xl"
-                          overflow="hidden"
-                          bg="rgba(26, 32, 44, 0.7)"
-                          p={6}
+          {/* Content */}
+          <Box>
+            {isLoading ? (
+              <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+                {[...Array(6)].map((_, i) => (
+                  <Card key={i} variant="elevated">
+                    <CardBody>
+                      <VStack spacing={4} align="stretch">
+                        <Skeleton height="24px" width="70%" />
+                        <Skeleton height="16px" />
+                        <Skeleton height="16px" width="90%" />
+                        <Skeleton height="32px" width="40%" />
+                      </VStack>
+                    </CardBody>
+                  </Card>
+                ))}
+              </SimpleGrid>
+            ) : error ? (
+              <Alert
+                status="error"
+                variant="subtle"
+                flexDirection="column"
+                alignItems="center"
+                justifyContent="center"
+                textAlign="center"
+                borderRadius="xl"
+                p={8}
+                bg="error.50"
+                border="1px solid"
+                borderColor="error.100"
+              >
+                <AlertIcon color="error.500" boxSize={6} mr={0} />
+                <AlertTitle mt={4} mb={1} fontSize="lg" color="error.700">
+                  Error Loading Events
+                </AlertTitle>
+                <AlertDescription color="error.600">
+                  We're having trouble loading the events. Please try again later.
+                </AlertDescription>
+              </Alert>
+            ) : events?.length === 0 ? (
+              <Alert
+                status="info"
+                variant="subtle"
+                flexDirection="column"
+                alignItems="center"
+                justifyContent="center"
+                textAlign="center"
+                borderRadius="xl"
+                p={8}
+                bg="primary.50"
+                border="1px solid"
+                borderColor="primary.100"
+              >
+                <AlertIcon color="primary.500" boxSize={6} mr={0} />
+                <AlertTitle mt={4} mb={1} fontSize="lg" color="primary.700">
+                  No Events Found
+                </AlertTitle>
+                <AlertDescription color="primary.600">
+                  Check back soon for upcoming events!
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
+                {events.map((event) => (
+                  <Card
+                    key={event.id}
+                    variant="elevated"
+                    _hover={{
+                      transform: 'translateY(-4px)',
+                      boxShadow: 'lg',
+                    }}
+                    transition="all 0.2s"
+                  >
+                    <CardBody>
+                      <VStack spacing={4} align="stretch">
+                        <Heading 
+                          size="md" 
+                          color="neutral.900"
+                          fontFamily="Google Sans"
                         >
-                          <VStack spacing={4} align="stretch">
-                            <Skeleton height="200px" />
-                            <Skeleton height="20px" width="40%" />
-                            <Skeleton height="24px" />
-                            <Skeleton height="60px" />
-                          </VStack>
-                        </Box>
-                      ))}
-                    </SimpleGrid>
-                  ) : error ? (
-                    <Text color="red.400" textAlign="center">
-                      {error}
-                    </Text>
-                  ) : (
-                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-                      {filterEvents('upcoming').map((event) => (
-                        <EventCard key={event._id} event={event} />
-                      ))}
-                      {filterEvents('upcoming').length === 0 && (
-                        <Text color="gray.400" textAlign="center" gridColumn="1/-1">
-                          No upcoming events found.
-                        </Text>
-                      )}
-                    </SimpleGrid>
-                  )}
-                </MotionBox>
-              </TabPanel>
-
-              <TabPanel padding={0}>
-                <MotionBox
-                  key="ongoing"
-                  custom={direction}
-                  variants={slideVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  px={4}
-                  py={8}
-                >
-                  {isLoading ? (
-                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-                      {[1, 2, 3].map((i) => (
-                        <Box
-                          key={i}
-                          borderRadius="xl"
-                          overflow="hidden"
-                          bg="rgba(26, 32, 44, 0.7)"
-                          p={6}
+                          {event.title}
+                        </Heading>
+                        <Text 
+                          color="neutral.700"
+                          fontFamily="Google Sans Text"
                         >
-                          <VStack spacing={4} align="stretch">
-                            <Skeleton height="200px" />
-                            <Skeleton height="20px" width="40%" />
-                            <Skeleton height="24px" />
-                            <Skeleton height="60px" />
-                          </VStack>
-                        </Box>
-                      ))}
-                    </SimpleGrid>
-                  ) : error ? (
-                    <Text color="red.400" textAlign="center">
-                      {error}
-                    </Text>
-                  ) : (
-                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-                      {filterEvents('ongoing').map((event) => (
-                        <EventCard key={event._id} event={event} />
-                      ))}
-                      {filterEvents('ongoing').length === 0 && (
-                        <Text color="gray.400" textAlign="center" gridColumn="1/-1">
-                          No ongoing events found.
+                          {event.description}
                         </Text>
-                      )}
-                    </SimpleGrid>
-                  )}
-                </MotionBox>
-              </TabPanel>
-
-              <TabPanel padding={0}>
-                <MotionBox
-                  key="past"
-                  custom={direction}
-                  variants={slideVariants}
-                  initial="enter"
-                  animate="center"
-                  exit="exit"
-                  px={4}
-                  py={8}
-                >
-                  {isLoading ? (
-                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-                      {[1, 2, 3].map((i) => (
-                        <Box
-                          key={i}
-                          borderRadius="xl"
-                          overflow="hidden"
-                          bg="rgba(26, 32, 44, 0.7)"
-                          p={6}
+                        <Text 
+                          color="primary.600" 
+                          fontWeight="500"
+                          fontFamily="Google Sans"
                         >
-                          <VStack spacing={4} align="stretch">
-                            <Skeleton height="200px" />
-                            <Skeleton height="20px" width="40%" />
-                            <Skeleton height="24px" />
-                            <Skeleton height="60px" />
-                          </VStack>
-                        </Box>
-                      ))}
-                    </SimpleGrid>
-                  ) : error ? (
-                    <Text color="red.400" textAlign="center">
-                      {error}
-                    </Text>
-                  ) : (
-                    <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={8}>
-                      {filterEvents('past').map((event) => (
-                        <EventCard key={event._id} event={event} />
-                      ))}
-                      {filterEvents('past').length === 0 && (
-                        <Text color="gray.400" textAlign="center" gridColumn="1/-1">
-                          No past events found.
+                          {event.date}
                         </Text>
-                      )}
-                    </SimpleGrid>
-                  )}
-                </MotionBox>
-              </TabPanel>
-            </TabPanels>
-          </Tabs>
+                        <Button
+                          colorScheme="primary"
+                          size="sm"
+                          alignSelf="flex-start"
+                          variant="outline"
+                        >
+                          Learn More
+                        </Button>
+                      </VStack>
+                    </CardBody>
+                  </Card>
+                ))}
+              </SimpleGrid>
+            )}
+          </Box>
         </VStack>
       </Container>
     </Box>

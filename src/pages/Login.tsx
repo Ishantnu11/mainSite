@@ -15,16 +15,21 @@ import {
   Checkbox,
   Link,
   HStack,
-  Image
+  Image,
+  IconButton,
+  Card,
+  CardBody,
+  useBoolean,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { FaEye, FaEyeSlash, FaGoogle } from 'react-icons/fa';
+import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 
-const Login = () => {
+export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useBoolean(false);
   const [loading, setLoading] = useState(false);
   const { login, user } = useAuth();
   const navigate = useNavigate();
@@ -33,23 +38,24 @@ const Login = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate('/admin');
+      navigate('/');
     }
   }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
     try {
+      setLoading(true);
       await login(email, password);
       toast({
-        title: 'Login successful',
+        title: 'Welcome back!',
+        description: 'Successfully signed in to your account.',
         status: 'success',
         duration: 3000,
+        position: 'top',
+        isClosable: true,
       });
-      // Force navigation to admin after successful login
-      window.location.href = '/admin';
+      navigate('/admin');
     } catch (error: any) {
       console.error('Login error:', error);
       let errorMessage = 'Please check your credentials and try again.';
@@ -61,174 +67,198 @@ const Login = () => {
       } else if (error.code === 'auth/network-request-failed') {
         errorMessage = 'Network error. Please check your connection.';
       }
-      
+
       toast({
-        title: 'Login failed',
+        title: 'Unable to sign in',
         description: errorMessage,
         status: 'error',
-        duration: 3000,
+        duration: 5000,
+        position: 'top',
+        isClosable: true,
       });
     } finally {
       setLoading(false);
     }
   };
 
-  const togglePasswordVisibility = () => setShowPassword(!showPassword);
-
   return (
-    <Box
-      minH="100vh"
-      display="flex"
-      alignItems="center"
-      bg="black"
-      position="relative"
-      overflow="hidden"
+    <Box 
+      minH="100vh" 
+      bg="white" 
+      display="flex" 
+      alignItems="center" 
+      justifyContent="center"
+      py={10}
     >
-      {/* GDG-themed decorative elements */}
-      <Box
-        position="absolute"
-        right="-100px"
-        top="-100px"
-        w="400px"
-        h="400px"
-        borderRadius="full"
-        bg="#4285F4"
-        opacity="0.15"
-      />
-      <Box
-        position="absolute"
-        left="-50px"
-        bottom="-50px"
-        w="300px"
-        h="300px"
-        borderRadius="full"
-        bg="#0F9D58"
-        opacity="0.15"
-      />
-      <Box
-        position="absolute"
-        left="30%"
-        top="20%"
-        w="200px"
-        h="200px"
-        borderRadius="full"
-        bg="#DB4437"
-        opacity="0.1"
-      />
-
-      <Container maxW="md" py={12} position="relative">
-        <VStack
-          spacing={8}
-          bg="whiteAlpha.100"
-          p={8}
-          borderRadius="xl"
-          boxShadow="2xl"
-          w="full"
-          backdropFilter="blur(10px)"
-          border="1px solid"
-          borderColor="whiteAlpha.200"
+      <Container maxW="400px">
+        <Card
+          variant="outline"
+          borderRadius="lg"
+          borderColor="neutral.200"
+          boxShadow="sm"
         >
-          <VStack spacing={3} w="full" align="center">
-            <Image 
-              src="/gdg-logo.png"
-              alt="GDG Logo"
-              boxSize="80px"
-              mb={2}
-            />
-            <Heading size="lg" color="white">Welcome to GDG Admin</Heading>
-            <Text color="whiteAlpha.800">Please enter your credentials to continue</Text>
-          </VStack>
-
-          <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-            <VStack spacing={4} w="full">
-              <FormControl>
-                <FormLabel color="whiteAlpha.900">Email</FormLabel>
-                <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  size="lg"
-                  borderRadius="md"
-                  bg="whiteAlpha.100"
-                  border="1px solid"
-                  borderColor="whiteAlpha.300"
-                  color="white"
-                  _placeholder={{ color: 'whiteAlpha.500' }}
-                  _hover={{ borderColor: 'blue.400' }}
-                  _focus={{ borderColor: 'blue.400', boxShadow: '0 0 0 1px #4285F4' }}
-                />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel color="whiteAlpha.900">Password</FormLabel>
-                <InputGroup>
-                  <Input
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    size="lg"
-                    borderRadius="md"
-                    bg="whiteAlpha.100"
-                    border="1px solid"
-                    borderColor="whiteAlpha.300"
-                    color="white"
-                    _placeholder={{ color: 'whiteAlpha.500' }}
-                    _hover={{ borderColor: 'blue.400' }}
-                    _focus={{ borderColor: 'blue.400', boxShadow: '0 0 0 1px #4285F4' }}
+          <CardBody p={8}>
+            <form onSubmit={handleSubmit}>
+              <VStack spacing={6} align="stretch">
+                {/* Logo and Title */}
+                <VStack spacing={6} align="center">
+                  <Image
+                    src="/images/t2k7QK3r_400x400.png"
+                    alt="GDG Logo"
+                    boxSize="60px"
+                    objectFit="contain"
                   />
-                  <InputRightElement h="full">
-                    <IconButton
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                      icon={showPassword ? <FaEyeSlash /> : <FaEye />}
-                      variant="ghost"
-                      onClick={togglePasswordVisibility}
-                      color="whiteAlpha.700"
-                      _hover={{ bg: 'whiteAlpha.100' }}
+                  <VStack spacing={1}>
+                    <Text
+                      fontSize="24px"
+                      fontWeight="normal"
+                      color="neutral.900"
+                      fontFamily="Google Sans"
+                      textAlign="center"
+                    >
+                      Sign in
+                    </Text>
+                    <Text
+                      fontSize="16px"
+                      color="neutral.700"
+                      fontFamily="Google Sans Text"
+                      textAlign="center"
+                    >
+                      to continue to GDG Gurugram University
+                    </Text>
+                  </VStack>
+                </VStack>
+
+                {/* Form */}
+                <VStack spacing={4} pt={4}>
+                  <FormControl isRequired>
+                    <FormLabel
+                      fontSize="sm"
+                      color="neutral.700"
+                      fontFamily="Google Sans Text"
+                      mb={1}
+                    >
+                      Email
+                    </FormLabel>
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your email"
+                      size="lg"
+                      borderRadius="md"
+                      borderColor="neutral.300"
+                      color="neutral.900"
+                      _placeholder={{ color: 'neutral.500' }}
+                      _hover={{ borderColor: 'neutral.400' }}
+                      _focus={{
+                        borderColor: 'primary.500',
+                        boxShadow: '0 0 0 1px var(--chakra-colors-primary-500)',
+                      }}
+                      fontFamily="Roboto"
                     />
-                  </InputRightElement>
-                </InputGroup>
-              </FormControl>
+                  </FormControl>
 
-              <VStack w="full" spacing={4} pt={2}>
-                <Button
-                  type="submit"
-                  w="full"
-                  size="lg"
-                  borderRadius="md"
-                  bg="#4285F4"
-                  color="white"
-                  _hover={{ bg: '#357ABD' }}
-                  _active={{ bg: '#2D6AA0' }}
-                  isLoading={loading}
-                  loadingText="Signing in..."
-                >
-                  Sign in
-                </Button>
-                <Button
-                  leftIcon={<FaGoogle />}
-                  variant="outline"
-                  size="lg"
-                  w="full"
-                  borderRadius="md"
-                  color="white"
-                  borderColor="whiteAlpha.300"
-                  _hover={{ bg: 'whiteAlpha.100' }}
-                >
-                  Sign in with Google
-                </Button>
+                  <FormControl isRequired>
+                    <FormLabel
+                      fontSize="sm"
+                      color="neutral.700"
+                      fontFamily="Google Sans Text"
+                      mb={1}
+                    >
+                      Password
+                    </FormLabel>
+                    <InputGroup size="lg">
+                      <Input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter your password"
+                        borderRadius="md"
+                        borderColor="neutral.300"
+                        color="neutral.900"
+                        _placeholder={{ color: 'neutral.500' }}
+                        _hover={{ borderColor: 'neutral.400' }}
+                        _focus={{
+                          borderColor: 'primary.500',
+                          boxShadow: '0 0 0 1px var(--chakra-colors-primary-500)',
+                        }}
+                        fontFamily="Roboto"
+                      />
+                      <InputRightElement>
+                        <IconButton
+                          variant="ghost"
+                          aria-label={showPassword ? 'Hide password' : 'Show password'}
+                          icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
+                          onClick={setShowPassword.toggle}
+                          color="neutral.600"
+                          _hover={{ bg: 'transparent', color: 'neutral.800' }}
+                        />
+                      </InputRightElement>
+                    </InputGroup>
+                  </FormControl>
+                </VStack>
+
+                {/* Links and Buttons */}
+                <VStack spacing={6} pt={4}>
+                  <Link
+                    color="primary.500"
+                    fontSize="14px"
+                    fontWeight="500"
+                    fontFamily="Google Sans"
+                    alignSelf="flex-start"
+                    _hover={{ textDecoration: 'none', color: 'primary.600' }}
+                  >
+                    Forgot password?
+                  </Link>
+
+                  <Text
+                    color="neutral.700"
+                    fontSize="14px"
+                    fontFamily="Google Sans Text"
+                  >
+                    Not your computer? Use Guest mode to sign in privately.{' '}
+                    <Link
+                      color="primary.500"
+                      fontWeight="500"
+                      _hover={{ textDecoration: 'none', color: 'primary.600' }}
+                    >
+                      Learn more
+                    </Link>
+                  </Text>
+
+                  <HStack justify="space-between" w="full" pt={4}>
+                    <Link
+                      color="primary.500"
+                      fontSize="14px"
+                      fontWeight="500"
+                      fontFamily="Google Sans"
+                      _hover={{ textDecoration: 'none', color: 'primary.600' }}
+                    >
+                      Create account
+                    </Link>
+                    <Button
+                      type="submit"
+                      colorScheme="primary"
+                      size="lg"
+                      px={8}
+                      fontFamily="Google Sans"
+                      fontWeight="500"
+                      isLoading={loading}
+                      _hover={{
+                        transform: 'translateY(-1px)',
+                        boxShadow: 'sm',
+                      }}
+                    >
+                      Sign in
+                    </Button>
+                  </HStack>
+                </VStack>
               </VStack>
-            </VStack>
-          </form>
-
-          <Text color="whiteAlpha.700" fontSize="sm" textAlign="center">
-            Having trouble? Contact your administrator
-          </Text>
-        </VStack>
+            </form>
+          </CardBody>
+        </Card>
       </Container>
     </Box>
   );
-};
-
-export default Login; 
+} 
