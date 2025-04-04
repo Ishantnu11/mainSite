@@ -17,7 +17,7 @@ import {
   AlertDescription,
 } from '@chakra-ui/react';
 import { motion } from 'framer-motion';
-import { API_ENDPOINTS, FALLBACK_API_ENDPOINTS, fetchWithFallback } from '../config/api';
+import { API_ENDPOINTS } from '../config/api';
 import EventCard from '../components/EventCard';
 import { useEvents } from '../hooks/useEvents';
 
