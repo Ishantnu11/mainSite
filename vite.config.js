@@ -12,10 +12,19 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    host: true,
+    host: '0.0.0.0',
+    hmr: {
+      host: '69.62.107.249',
+      port: 3000,
+      protocol: 'ws'
+    },
+    watch: {
+      usePolling: true
+    },
     allowedHosts: [
       'localhost',
       '127.0.0.1',
+      '69.62.107.249',
       'development.gdggug.com',
       'gdggug.com'
     ],
