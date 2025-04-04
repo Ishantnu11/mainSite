@@ -72,7 +72,7 @@ export default function Team() {
         <VStack spacing={12}>
           {/* Header */}
           <VStack spacing={4} textAlign="center" maxW="800px">
-            <Heading
+          <Heading
               fontSize={{ base: '3xl', md: '4xl' }}
               color="neutral.900"
               fontFamily="Google Sans Display"
@@ -83,7 +83,7 @@ export default function Team() {
                 Amazing Team
               </Text>
             </Heading>
-            <Text 
+            <Text
               fontSize={{ base: 'lg', md: 'xl' }} 
               color="neutral.700"
               fontFamily="Google Sans Text"
@@ -94,12 +94,12 @@ export default function Team() {
           </VStack>
 
           {/* Team Grid */}
-          <SimpleGrid
-            columns={{ base: 1, md: 2, lg: 3 }}
+            <SimpleGrid
+              columns={{ base: 1, md: 2, lg: 3 }}
             spacing={8}
             w="full"
-          >
-            {teamMembers.map((member) => (
+            >
+              {teamMembers.map((member) => (
               <Card
                 key={member.name}
                 variant="elevated"
@@ -168,8 +168,8 @@ export default function Team() {
                   </VStack>
                 </CardBody>
               </Card>
-            ))}
-          </SimpleGrid>
+              ))}
+            </SimpleGrid>
         </VStack>
       </Container>
     </Box>

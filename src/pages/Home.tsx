@@ -41,10 +41,10 @@ const Home = () => {
         >
           <MotionBox
             flex="1"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
             <Stack spacing={6} maxW="600px">
               <Heading 
                 as="h1" 
@@ -75,35 +75,35 @@ const Home = () => {
                 >
                   Explore Events
                 </Button>
-                <Button
-                  size="lg"
+              <Button
+                size="lg"
                   variant="outline"
                   colorScheme="primary"
                   onClick={() => navigate('/team')}
-                  _hover={{
-                    transform: 'translateY(-2px)',
+                _hover={{
+                  transform: 'translateY(-2px)',
                     boxShadow: 'sm',
-                  }}
-                >
+                }}
+              >
                   Meet the Team
-                </Button>
+              </Button>
               </Flex>
             </Stack>
-          </MotionBox>
+            </MotionBox>
 
           <MotionBox 
             flex="1"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <Image
+            >
+              <Image
               src="/images/HEROiMAGE.png"
               alt="GDG Community"
               w="full"
-              h="auto"
+                h="auto"
               maxH="500px"
-              objectFit="contain"
+                objectFit="contain"
             />
           </MotionBox>
         </Flex>
@@ -237,7 +237,7 @@ const Home = () => {
                     objectFit="contain"
                   />
                 </Box>
-              </SimpleGrid>
+          </SimpleGrid>
             </CardBody>
           </Card>
         </Container>
