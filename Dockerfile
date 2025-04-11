@@ -1,45 +1,61 @@
-# Build stage
-FROM node:18-alpine as build
+FROM ubuntu:22.04
 
-# Set working directory
+# Set up timezone and avoid prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
+# Install essential system packages and Node.js
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    vim \
+    nano \
+    openssh-server \
+    sudo \
+    net-tools \
+    iputils-ping \
+    htop \
+    ufw \
+    nginx \
+    && mkdir /run/sshd \
+    && echo 'root:vpsadmin' | chpasswd \
+    && sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config \
+    && sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g npm@latest
+
+# Set up working directory
 WORKDIR /app
 
-# Install dependencies first (better caching)
+# Copy configuration files
+COPY nginx.conf /etc/nginx/nginx.conf
 COPY package*.json ./
-COPY backend/package*.json ./backend/
 
-# Set npm config for better network resilience
-RUN npm config set fetch-retry-maxtimeout 600000 && \
-    npm config set fetch-retry-mintimeout 100000 && \
-    npm config set fetch-retries 5
+# Create directory structure
+RUN mkdir -p /app/frontend /app/backend /app/logs
 
-# Install dependencies
-RUN npm install && cd backend && npm install
+# Set up Nginx logs
+RUN mkdir -p /var/log/nginx && \
+    touch /var/log/nginx/access.log && \
+    touch /var/log/nginx/error.log
 
-# Copy source code
-COPY . .
+# Expose ports
+EXPOSE 22 80 443 3000 3001
 
-# Build frontend and backend
-RUN npm run build
+# Copy startup script
+COPY <<EOF /app/start.sh
+#!/bin/bash
+service ssh start
+service nginx start
+tail -f /var/log/nginx/access.log /var/log/nginx/error.log
+EOF
 
-# Production stage
-FROM node:18-alpine
+RUN chmod +x /app/start.sh
 
-# Set working directory
-WORKDIR /app
+# Set working directory to root for admin access
+WORKDIR /root
 
-# Copy built files and package files
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/backend/dist ./backend/dist
-COPY --from=build /app/package*.json ./
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/backend/node_modules ./backend/node_modules
-
-# Set production environment
-ENV NODE_ENV=production
-
-# Expose port
-EXPOSE 3000
-
-# Start the application using node directly
-CMD ["node", "backend/dist/server.js"] 
+# Start services
+CMD ["/app/start.sh"] 
