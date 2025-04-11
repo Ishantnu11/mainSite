@@ -6,6 +6,7 @@ build:
   context: .
   args:
     - NODE_ENV=production
+    - NPM_CONFIG_LOGLEVEL=verbose
 deploy:
   replicas: 1
   resources:
@@ -16,6 +17,8 @@ deploy:
       value: ${BACKEND_URL}
     - name: NODE_ENV
       value: production
+    - name: NPM_CONFIG_LOGLEVEL
+      value: verbose
   ports:
     - port: 80
       protocol: http

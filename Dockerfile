@@ -1,14 +1,17 @@
 # Build stage
 FROM node:18-alpine AS build
 
+# Install necessary build tools
+RUN apk add --no-cache python3 make g++
+
 # Set working directory
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies with verbose output
-RUN npm install --verbose
+# Install dependencies with flags to ignore optional dependencies
+RUN npm install --no-optional --verbose
 
 # Copy source code
 COPY . .
