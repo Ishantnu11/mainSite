@@ -297,17 +297,17 @@ const News = () => {
           {/* Header */}
           <VStack spacing={4} textAlign="center" maxW="800px">
             <Heading
-              fontSize={{ base: '3xl', md: '4xl' }}
+                fontSize={{ base: '3xl', md: '4xl' }}
               color="neutral.900"
               fontFamily="Google Sans Display"
               fontWeight="medium"
-            >
+              >
               Latest{' '}
               <Text as="span" color="primary.500">
                 News & Updates
               </Text>
             </Heading>
-            <Text 
+              <Text
               fontSize={{ base: 'lg', md: 'xl' }} 
               color="neutral.700"
               fontFamily="Google Sans Text"
@@ -349,16 +349,16 @@ const News = () => {
                   {category.label}
                 </Button>
               ))}
-            </HStack>
-          </VStack>
+                    </HStack>
+                  </VStack>
 
           {/* News Grid */}
-          <SimpleGrid
-            columns={{ base: 1, md: 2, lg: 3 }}
+            <SimpleGrid
+              columns={{ base: 1, md: 2, lg: 3 }}
             spacing={8}
             w="full"
-          >
-            {filterNews().map((item) => (
+            >
+              {filterNews().map((item) => (
               <Card
                 key={item._id}
                 variant="elevated"
@@ -434,8 +434,8 @@ const News = () => {
                   </VStack>
                 </CardBody>
               </Card>
-            ))}
-          </SimpleGrid>
+              ))}
+            </SimpleGrid>
 
           {/* Load More Button */}
           <Button

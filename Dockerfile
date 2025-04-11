@@ -13,8 +13,8 @@ RUN npm config set fetch-retry-maxtimeout 600000 && \
     npm config set fetch-retry-mintimeout 100000 && \
     npm config set fetch-retries 5
 
-# Install dependencies with a retry mechanism
-RUN npm install --no-audit || (sleep 5 && npm install --no-audit) || (sleep 10 && npm install --no-audit)
+# Install dependencies
+RUN npm install && cd backend && npm install
 
 # Copy source code
 COPY . .
@@ -33,6 +33,7 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/backend/dist ./backend/dist
 COPY --from=build /app/package*.json ./
 COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/backend/node_modules ./backend/node_modules
 
 # Set production environment
 ENV NODE_ENV=production
@@ -40,5 +41,5 @@ ENV NODE_ENV=production
 # Expose port
 EXPOSE 3000
 
-# Start the application
-CMD ["npm", "start"] 
+# Start the application using node directly
+CMD ["node", "backend/dist/server.js"] 
