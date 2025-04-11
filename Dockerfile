@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies with verbose output
+RUN npm install --verbose
 
 # Copy source code
 COPY . .

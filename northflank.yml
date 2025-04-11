@@ -4,6 +4,8 @@ type: service
 build:
   dockerfile: Dockerfile
   context: .
+  args:
+    - NODE_ENV=production
 deploy:
   replicas: 1
   resources:
@@ -12,7 +14,17 @@ deploy:
   env:
     - name: REACT_APP_API_URL
       value: ${BACKEND_URL}
+    - name: NODE_ENV
+      value: production
   ports:
     - port: 80
       protocol: http
-      public: true 
+      public: true
+  health:
+    path: /
+    port: 80
+    initialDelay: 30
+    period: 10
+    timeout: 5
+    successThreshold: 1
+    failureThreshold: 3 
