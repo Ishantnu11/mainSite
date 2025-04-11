@@ -1,5 +1,5 @@
 // Define API base URL
-const VPS_API_URL = 'http://69.62.107.249:3001';
+const VPS_API_URL = process.env.REACT_APP_API_URL || 'http://69.62.107.249:3001';
 
 // Get the base URL for API calls
 export const getBaseUrl = () => {

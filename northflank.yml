@@ -1,0 +1,18 @@
+version: 1
+name: gdggug-frontend
+type: service
+build:
+  dockerfile: Dockerfile
+  context: .
+deploy:
+  replicas: 1
+  resources:
+    cpu: 100m
+    memory: 256Mi
+  env:
+    - name: REACT_APP_API_URL
+      value: ${BACKEND_URL}
+  ports:
+    - port: 80
+      protocol: http
+      public: true 
