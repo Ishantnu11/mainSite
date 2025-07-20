@@ -32,8 +32,9 @@ import {
   Tooltip,
 } from '@chakra-ui/react';
 import { API_ENDPOINTS } from '../../config/api';
-import { EditIcon, DeleteIcon, CalendarIcon, EmailIcon } from '@chakra-ui/icons';
+import { EditIcon, DeleteIcon, CalendarIcon, EmailIcon, AddIcon } from '@chakra-ui/icons';
 import { FaLinkedin, FaTwitter, FaGithub } from 'react-icons/fa';
+import ImageUpload from '../../components/ImageUpload';
 
 const categories = [
   { value: 'tech-talk', label: '🎤 Tech Talk' },
@@ -607,32 +608,24 @@ const Dashboard = () => {
                     />
                   </FormControl>
 
-                  <Grid templateColumns="repeat(2, 1fr)" gap={6}>
-                    <GridItem>
-                      <FormControl isRequired>
-                        <FormLabel>Image URL</FormLabel>
-                        <Input
-                          value={eventForm.image}
-                          onChange={(e) => setEventForm({ ...eventForm, image: e.target.value })}
-                          placeholder="Enter image URL"
-                          bg="gray.700"
-                          border="none"
-                        />
-                      </FormControl>
-                    </GridItem>
-                    <GridItem>
-                      <FormControl>
-                        <FormLabel>Registration Link</FormLabel>
-                        <Input
-                          value={eventForm.link}
-                          onChange={(e) => setEventForm({ ...eventForm, link: e.target.value })}
-                          placeholder="Enter registration link"
-                          bg="gray.700"
-                          border="none"
-                        />
-                      </FormControl>
-                    </GridItem>
-                  </Grid>
+                  <FormControl isRequired>
+                    <FormLabel>Event Image</FormLabel>
+                    <ImageUpload
+                      onImageUpload={(imageUrl) => setEventForm({ ...eventForm, image: imageUrl })}
+                      currentImages={eventForm.image ? [eventForm.image] : []}
+                    />
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Registration Link</FormLabel>
+                    <Input
+                      value={eventForm.link}
+                      onChange={(e) => setEventForm({ ...eventForm, link: e.target.value })}
+                      placeholder="Enter registration link"
+                      bg="gray.700"
+                      border="none"
+                    />
+                  </FormControl>
 
                   <Button
                     colorScheme="blue"
@@ -844,18 +837,10 @@ const Dashboard = () => {
                   </Grid>
 
                   <FormControl>
-                    <FormLabel>Image URL (Optional)</FormLabel>
-                    <Input
-                      name="image"
-                      value={newsForm.image}
-                      onChange={handleNewsInputChange}
-                      placeholder="Enter image URL"
-                      bg="gray.700"
-                      border="none"
-                      _focus={{
-                        bg: 'gray.600',
-                        boxShadow: 'none',
-                      }}
+                    <FormLabel>News Image (Optional)</FormLabel>
+                    <ImageUpload
+                      onImageUpload={(imageUrl) => setNewsForm({ ...newsForm, image: imageUrl })}
+                      currentImages={newsForm.image ? [newsForm.image] : []}
                     />
                   </FormControl>
 
@@ -1050,13 +1035,10 @@ const Dashboard = () => {
                   </FormControl>
 
                   <FormControl>
-                    <FormLabel>Image URL</FormLabel>
-                    <Input
-                      value={teamForm.image}
-                      onChange={(e) => setTeamForm({ ...teamForm, image: e.target.value })}
-                      placeholder="Enter profile image URL"
-                      bg="gray.700"
-                      border="none"
+                    <FormLabel>Profile Image</FormLabel>
+                    <ImageUpload
+                      onImageUpload={(imageUrl) => setTeamForm({ ...teamForm, image: imageUrl })}
+                      currentImages={teamForm.image ? [teamForm.image] : []}
                     />
                   </FormControl>
 

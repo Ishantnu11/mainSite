@@ -1,179 +1,166 @@
 import {
-  Box,
-  Flex,
-  HStack,
-  IconButton,
+  AppBar,
+  Toolbar,
   Button,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  useDisclosure,
-  useColorModeValue,
-  Stack,
-  Image,
-  CloseButton,
-  VStack,
-} from '@chakra-ui/react';
-import { HamburgerIcon } from '@chakra-ui/icons';
-import { Link as RouterLink } from 'react-router-dom';
+  IconButton,
+  Box,
+  Typography,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  useTheme,
+  useMediaQuery,
+} from '@mui/material';
+import { Menu as MenuIcon, Close as CloseIcon } from '@mui/icons-material';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-
-const NavLink = ({ to, children }: { to: string; children: React.ReactNode }) => (
-  <RouterLink to={to}>
-    <Button
-      variant="ghost"
-      color="neutral.700"
-      _hover={{
-        bg: 'neutral.50',
-        color: 'neutral.900',
-      }}
-      _active={{
-        bg: 'neutral.100',
-      }}
-    >
-      {children}
-    </Button>
-  </RouterLink>
-);
+import { useState } from 'react';
 
 export default function Navbar() {
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [mobileOpen, setMobileOpen] = useState(false);
   const { user, logout } = useAuth();
-  const bg = useColorModeValue('white', 'white');
-  const borderColor = useColorModeValue('neutral.200', 'neutral.200');
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const navigate = useNavigate();
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  const navItems = [
+    { text: 'Home', path: '/' },
+    { text: 'Events', path: '/events' },
+    { text: 'Team', path: '/team' },
+    { text: 'News', path: '/news' },
+    { text: 'TPO', path: '/tpo' },
+  ];
+
+  const drawer = (
+    <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
+      <Typography variant="h6" sx={{ my: 2 }}>
+        GDG GUG
+      </Typography>
+      <List>
+        {navItems.map((item) => (
+          <ListItem key={item.text} disablePadding>
+            <ListItemText 
+              primary={item.text} 
+              onClick={() => navigate(item.path)}
+              sx={{ textAlign: 'center', cursor: 'pointer' }}
+            />
+          </ListItem>
+        ))}
+        <ListItem disablePadding>
+          <ListItemText 
+            primary={user ? 'Logout' : 'Login'} 
+            onClick={user ? handleLogout : () => navigate('/login')}
+            sx={{ textAlign: 'center', cursor: 'pointer' }}
+          />
+        </ListItem>
+      </List>
+    </Box>
+  );
 
   return (
-    <Box
-      bg={bg}
-      px={4}
-      py={4}
-      borderBottom="1px"
-      borderColor={borderColor}
-      position="sticky"
-      top={0}
-      zIndex={10}
-      boxShadow="sm"
-    >
-      <Flex h={16} alignItems="center" justifyContent="space-between" maxW="1400px" mx="auto">
-        <IconButton
-          size="md"
-          icon={<HamburgerIcon />}
-          aria-label="Open Menu"
-          display={{ base: 'flex', md: 'none' }}
-          onClick={onOpen}
-          variant="ghost"
-          color="neutral.700"
-        />
-        <HStack spacing={8} alignItems="center">
-          <RouterLink to="/">
-            <Image
-              src="/images/t2k7QK3r_400x400.png"
-              alt="GDG GUG Logo"
-              h="40px"
-              w="40px"
-              objectFit="contain"
-            />
-          </RouterLink>
-          <HStack as="nav" spacing={4} display={{ base: 'none', md: 'flex' }}>
-            <NavLink to="/">Home</NavLink>
-            <NavLink to="/events">Events</NavLink>
-            <NavLink to="/team">Team</NavLink>
-            <NavLink to="/news">News</NavLink>
-            <NavLink to="/tpo">TPO</NavLink>
-          </HStack>
-        </HStack>
-        <Flex alignItems="center">
-          {user ? (
-            <Button
-              variant="outline"
-              colorScheme="primary"
-              onClick={logout}
-              _hover={{
-                bg: 'primary.50',
-                color: 'primary.700',
-              }}
-            >
-              Logout
-            </Button>
-          ) : (
-            <Button
-              as={RouterLink}
-              to="/login"
-              colorScheme="primary"
-              _hover={{
-                bg: 'primary.600',
-                transform: 'translateY(-1px)',
-                boxShadow: 'sm',
-              }}
-            >
-              Login
-            </Button>
-          )}
-        </Flex>
-      </Flex>
-
-      {isOpen ? (
-        <Box
-          pb={4}
-          display={{ md: 'none' }}
-          position="fixed"
-          top={0}
-          left={0}
-          right={0}
-          bottom={0}
-          bg="white"
-          zIndex={20}
-        >
-          <Flex h={16} alignItems="center" justifyContent="space-between" px={4}>
-            <RouterLink to="/">
-              <Image
+    <>
+      <AppBar position="sticky" sx={{ 
+        bgcolor: 'rgba(255, 255, 255, 0.95)', 
+        backdropFilter: 'blur(20px)',
+        color: 'text.primary', 
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        borderBottom: '1px solid rgba(0,0,0,0.06)'
+      }}>
+        <Toolbar sx={{ maxWidth: '1400px', mx: 'auto', width: '100%', py: 1 }}>
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            edge="start"
+            onClick={handleDrawerToggle}
+            sx={{ mr: 2, display: { md: 'none' } }}
+          >
+            <MenuIcon />
+          </IconButton>
+          
+          <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+            <RouterLink to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <img
                 src="/images/t2k7QK3r_400x400.png"
                 alt="GDG GUG Logo"
-                h="40px"
-                w="40px"
-                objectFit="contain"
+                style={{ height: '40px', width: '40px', objectFit: 'contain' }}
               />
             </RouterLink>
-            <CloseButton onClick={onClose} color="neutral.700" />
-          </Flex>
-          <VStack spacing={4} px={4}>
-            <NavLink to="/">Home</NavLink>
-            <NavLink to="/events">Events</NavLink>
-            <NavLink to="/team">Team</NavLink>
-            <NavLink to="/news">News</NavLink>
-            <NavLink to="/tpo">TPO</NavLink>
-            {user ? (
-              <Button
-                variant="outline"
-                colorScheme="primary"
-                onClick={logout}
-                w="full"
-                _hover={{
-                  bg: 'primary.50',
-                  color: 'primary.700',
-                }}
-              >
-                Logout
-              </Button>
-            ) : (
-              <Button
-                as={RouterLink}
-                to="/login"
-                colorScheme="primary"
-                w="full"
-                _hover={{
-                  bg: 'primary.600',
-                  transform: 'translateY(-1px)',
-                  boxShadow: 'sm',
-                }}
-              >
-                Login
-              </Button>
-            )}
-          </VStack>
-        </Box>
-      ) : null}
-    </Box>
+            
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, ml: 4 }}>
+              {navItems.map((item) => (
+                <Button
+                  key={item.text}
+                  onClick={() => navigate(item.path)}
+                  sx={{ 
+                    color: 'inherit', 
+                    mx: 1,
+                    px: 3,
+                    py: 1.5,
+                    borderRadius: 2,
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    fontSize: '0.95rem',
+                    '&:hover': {
+                      bgcolor: 'rgba(0,0,0,0.04)',
+                      transform: 'translateY(-1px)'
+                    },
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {item.text}
+                </Button>
+              ))}
+            </Box>
+          </Box>
+
+          <Button
+            variant={user ? 'outlined' : 'contained'}
+            color="primary"
+            onClick={user ? handleLogout : () => navigate('/login')}
+            sx={{
+              px: 3,
+              py: 1.5,
+              borderRadius: 2,
+              fontWeight: 600,
+              textTransform: 'none',
+              fontSize: '0.95rem',
+              boxShadow: user ? 'none' : '0 4px 14px rgba(25, 118, 210, 0.3)',
+              '&:hover': {
+                transform: 'translateY(-1px)',
+                boxShadow: user ? '0 2px 8px rgba(0,0,0,0.1)' : '0 6px 20px rgba(25, 118, 210, 0.4)'
+              },
+              transition: 'all 0.2s ease'
+            }}
+          >
+            {user ? 'Logout' : 'Login'}
+          </Button>
+        </Toolbar>
+      </AppBar>
+
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{
+          keepMounted: true, // Better open performance on mobile.
+        }}
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
+        }}
+      >
+        {drawer}
+      </Drawer>
+    </>
   );
 } 

@@ -1,4 +1,4 @@
-import { Box } from '@chakra-ui/react'
+import { Box } from '@mui/material'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import Navbar from './components/Navbar'
@@ -15,46 +15,27 @@ function App() {
     <AuthProvider>
       <Router>
         <Box 
-          minH="100vh" 
-          w="100vw" 
-          bg="white" 
-          color="google.gray.900"
-          overflowX="hidden"
-          position="relative"
+          sx={{
+            minHeight: '100vh',
+            width: '100vw',
+            bgcolor: '#fafafa',
+            color: '#1a1a1a',
+            overflowX: 'hidden',
+            position: 'relative',
+            fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+          }}
         >
-          {/* Subtle gradient backgrounds */}
-          <Box
-            position="fixed"
-            top="-10%"
-            right="-10%"
-            width="50%"
-            height="50%"
-            background="radial-gradient(circle at center, rgba(66, 133, 244, 0.08), transparent 70%)"
-            filter="blur(60px)"
-            zIndex={0}
-            pointerEvents="none"
-          />
-          <Box
-            position="fixed"
-            bottom="-10%"
-            left="-10%"
-            width="50%"
-            height="50%"
-            background="radial-gradient(circle at center, rgba(52, 168, 83, 0.08), transparent 70%)"
-            filter="blur(60px)"
-            zIndex={0}
-            pointerEvents="none"
-          />
-          
           {/* Content */}
-          <Box position="relative" zIndex={1} minH="100vh" display="flex" flexDirection="column">
+          <Box sx={{ position: 'relative', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             <Navbar />
             <Box 
-              as="main" 
-              flex="1"
-              w="100%"
-              maxW="100vw"
-              mx="auto"
+              component="main"
+              sx={{
+                flex: 1,
+                width: '100%',
+                maxWidth: '100vw',
+                mx: 'auto'
+              }}
             >
               <Routes>
                 <Route path="/" element={<Home />} />
