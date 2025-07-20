@@ -10,6 +10,7 @@ const __dirname = dirname(__filename)
 export default defineConfig({
   plugins: [react()],
   build: {
+    chunkSizeWarningLimit: 1000,
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: true,

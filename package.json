@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && cd backend && tsc",
+    "build": "tsc && vite build && cd dist-server && tsc",
     "preview": "vite preview",
-    "start": "node backend/dist/server.js",
-    "dev:server": "ts-node-dev --respawn --transpile-only backend/src/server.ts"
+    "start": "node dist-server/server.js",
+    "dev:server": "ts-node-dev --respawn --transpile-only dist-server/server.ts"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.2.4",
