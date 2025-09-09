@@ -20,11 +20,13 @@ import {
   Card,
   CardBody,
   useBoolean,
+  Flex,
 } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { FaEye, FaEyeSlash, FaGoogle } from 'react-icons/fa';
 import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
+import { relative } from 'path';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -90,39 +92,58 @@ export default function Login() {
       justifyContent="center"
       py={10}
     >
-      <Container maxW="400px">
+      <Container maxW="400px" border="2px solid #ccc" borderRadius="12px"
+
+      transition="all 0.3s ease"
+      _hover={{
+        boxShadow: '0 0 12px rgba(59, 130, 246, 0.6)', // glowing effect
+        borderColor: '#ffa500' }}>
+        
         <Card
           variant="outline"
           borderRadius="lg"
           borderColor="neutral.200"
           boxShadow="sm"
+
+          
+
+          
         >
           <CardBody p={8}>
             <form onSubmit={handleSubmit}>
               <VStack spacing={6} align="stretch">
                 {/* Logo and Title */}
-                <VStack spacing={6} align="center">
+                <VStack spacing={0} align="center">
                   <Image
                     src="/images/t2k7QK3r_400x400.png"
                     alt="GDG Logo"
-                    boxSize="60px"
+                    boxSize="80px"
                     objectFit="contain"
                   />
-                  <VStack spacing={1}>
+                  <VStack spacing={0}>
                     <Text
                       fontSize="24px"
-                      fontWeight="normal"
+                      fontWeight="bold"
                       color="neutral.900"
                       fontFamily="Google Sans"
                       textAlign="center"
+                      mt="-10"
+                      
                     >
-                      Sign in
+                      Sign In
                     </Text>
                     <Text
                       fontSize="16px"
                       color="neutral.700"
                       fontFamily="Google Sans Text"
                       textAlign="center"
+                      mt="-12"
+
+
+                      
+                    
+
+
                     >
                       to continue to GDG Gurugram University
                     </Text>
@@ -130,13 +151,15 @@ export default function Login() {
                 </VStack>
 
                 {/* Form */}
-                <VStack spacing={4} pt={4}>
+                <VStack spacing={3} pt={4}>
                   <FormControl isRequired>
                     <FormLabel
                       fontSize="sm"
+                      
                       color="neutral.700"
                       fontFamily="Google Sans Text"
                       mb={1}
+                      
                     >
                       Email
                     </FormLabel>
@@ -146,10 +169,11 @@ export default function Login() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="Enter your email"
                       size="lg"
+                      
                       borderRadius="md"
                       borderColor="neutral.300"
                       color="neutral.900"
-                      _placeholder={{ color: 'neutral.500' }}
+                      _placeholder={{ color: 'neutral.500'}}
                       _hover={{ borderColor: 'neutral.400' }}
                       _focus={{
                         borderColor: 'primary.500',
@@ -162,6 +186,7 @@ export default function Login() {
                   <FormControl isRequired>
                     <FormLabel
                       fontSize="sm"
+                    
                       color="neutral.700"
                       fontFamily="Google Sans Text"
                       mb={1}
@@ -192,6 +217,8 @@ export default function Login() {
                           icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
                           onClick={setShowPassword.toggle}
                           color="neutral.600"
+                          bottom="-1.5"
+                          left="-1"
                           _hover={{ bg: 'transparent', color: 'neutral.800' }}
                         />
                       </InputRightElement>
@@ -206,7 +233,9 @@ export default function Login() {
                     fontSize="14px"
                     fontWeight="500"
                     fontFamily="Google Sans"
-                    alignSelf="flex-start"
+                    alignSelf="flex-centre"
+                    cursor="pointer"
+
                     _hover={{ textDecoration: 'none', color: 'primary.600' }}
                   >
                     Forgot password?
@@ -227,15 +256,18 @@ export default function Login() {
                     </Link>
                   </Text>
 
-                  <HStack justify="space-between" w="full" pt={4}>
+                  <HStack   justify="space-between" w="full" pt={4} mt='-10'>
                     <Link
                       color="primary.500"
                       fontSize="14px"
                       fontWeight="500"
                       fontFamily="Google Sans"
+                      ml='-110'
+                      cursor="pointer"
+
                       _hover={{ textDecoration: 'none', color: 'primary.600' }}
                     >
-                      Create account
+                      Create account          
                     </Link>
                     <Button
                       type="submit"
