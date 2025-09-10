@@ -92,7 +92,8 @@ export default function Login() {
       justifyContent="center"
       py={10}
     >
-      <Container maxW="400px" border="2px solid #ccc" borderRadius="12px"
+      <Container maxW="400px" 
+  border="2px  solid #ffa500  " borderRadius="12px"
 
       transition="all 0.3s ease"
       _hover={{
@@ -113,13 +114,25 @@ export default function Login() {
             <form onSubmit={handleSubmit}>
               <VStack spacing={6} align="stretch">
                 {/* Logo and Title */}
-                <VStack spacing={0} align="center">
+                <VStack spacing={0} align="center" >
                   <Image
                     src="/images/t2k7QK3r_400x400.png"
                     alt="GDG Logo"
                     boxSize="80px"
-                    objectFit="contain"
-                  />
+                    display="inline-block"
+                    padding="1px"   border-radius="20%"
+  background="linear-gradient(135deg, #4285f4, #ea4335, #fbbc04, #34a853)"
+  background-size=" 30% 30%"
+
+
+
+
+
+                    objectFit="contain"  borderRadius="12px" _hover={{boxShadow: '0 0 12px rgba(59, 130, 246, 0.6)', // glowing effect transform: 'scale(1.05)', // optional: slight zoom for drama
+        zIndex: 10, }}
+
+
+                      />
                   <VStack spacing={0}>
                     <Text
                       fontSize="24px"
@@ -127,7 +140,7 @@ export default function Login() {
                       color="neutral.900"
                       fontFamily="Google Sans"
                       textAlign="center"
-                      mt="-10"
+                      mt="-6"
                       
                     >
                       Sign In
@@ -292,5 +305,7 @@ export default function Login() {
         </Card>
       </Container>
     </Box>
+  );
+} 
   );
 } 
